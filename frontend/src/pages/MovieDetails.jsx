@@ -3,15 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getMovie, getTrendingMovies, PLACEHOLDER_POSTER } from '../services/api';
 import LanguageFormatModal from '../components/LanguageFormatModal';
 
-// Derive available languages from the movie (or a static default list)
+// Derive available languages from the movie's own language field
 function getMovieLanguages(movie) {
   const langs = [];
-  if (movie?.language) langs.push(movie.language.toUpperCase());
-  // Add common languages as options
-  const extras = ['ENGLISH', 'HINDI', 'TELUGU', 'TAMIL'];
-  extras.forEach((l) => {
-    if (!langs.includes(l)) langs.push(l);
-  });
+  if (movie?.language) {
+    langs.push(movie.language.toUpperCase());
+  }
+  // Add ENGLISH as a common option if not already present
+  if (!langs.includes('ENGLISH')) langs.push('ENGLISH');
   return langs;
 }
 

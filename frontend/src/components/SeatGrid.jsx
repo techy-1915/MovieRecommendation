@@ -45,9 +45,6 @@ export default function SeatGrid({ seats, selectedSeats, onSeatToggle, pricePerS
     onSeatToggle(seat.seatId);
   };
 
-  const selectedCount = selectedSeats.length;
-  const totalPrice = selectedCount * (pricePerSeat || 200);
-
   return (
     <div>
       {/* Seat grid by category */}
@@ -115,16 +112,7 @@ export default function SeatGrid({ seats, selectedSeats, onSeatToggle, pricePerS
           <span className="text-gray-400">Sold</span>
         </div>
       </div>
-
-      {/* Summary */}
-      {selectedCount > 0 && (
-        <div className="mt-6 bg-gray-800 rounded-xl p-4 text-center border border-gray-700">
-          <p className="text-gray-400 text-sm">
-            {selectedCount} seat{selectedCount > 1 ? 's' : ''} selected
-          </p>
-          <p className="text-white text-2xl font-bold mt-1">₹{totalPrice}</p>
-        </div>
-      )}
     </div>
   );
 }
+

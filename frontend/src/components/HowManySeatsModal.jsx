@@ -8,7 +8,7 @@ const PRICE_CATEGORIES = [
   { name: 'LOUNGERS', price: 295, status: 'AVAILABLE', statusClass: 'text-green-500' },
 ];
 
-export default function HowManySeatsModal({ onConfirm, onClose, showPrice, priceCategories }) {
+export default function HowManySeatsModal({ onConfirm, onClose, basePrice, priceCategories }) {
   const [selected, setSelected] = useState(2);
 
   const categories = priceCategories || PRICE_CATEGORIES;
@@ -61,7 +61,7 @@ export default function HowManySeatsModal({ onConfirm, onClose, showPrice, price
           {categories.map((cat) => (
             <div key={cat.name} className="flex justify-between items-center">
               <span className="text-gray-700 font-medium text-sm">
-                {cat.name} ₹{showPrice != null ? showPrice : cat.price}
+                {cat.name} ₹{basePrice != null ? basePrice : cat.price}
               </span>
               <span className={`text-xs font-semibold ${cat.statusClass}`}>
                 {cat.status}

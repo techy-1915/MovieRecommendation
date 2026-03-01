@@ -56,7 +56,7 @@ export default function Showtimes() {
   const [selectedShow, setSelectedShow] = useState(null);
 
   useEffect(() => {
-    const city = localStorage.getItem('selectedCity') || undefined;
+    const city = localStorage.getItem('selectedCity') ?? undefined;
     setLoading(true);
     setError(null);
     Promise.all([getMovie(id), getTheatresForMovie(id, city)])
@@ -276,7 +276,7 @@ export default function Showtimes() {
       {/* ── 6. How many seats modal ───────────────────────────────────────── */}
       {showHowManySeatsModal && (
         <HowManySeatsModal
-          showPrice={selectedShow?.price}
+          basePrice={selectedShow?.price}
           onConfirm={handleSeatsConfirm}
           onClose={() => setShowHowManySeatsModal(false)}
         />
