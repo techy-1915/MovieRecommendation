@@ -49,6 +49,9 @@ public class Movie {
     @Column(name = "poster_url", length = 500)
     private String posterUrl;
 
+    @Column(name = "region", length = 10)
+    private String region;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "movie_genres",

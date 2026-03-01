@@ -25,4 +25,15 @@ public class TheatreController {
         }
         return ResponseEntity.ok(theatreRepository.findAll());
     }
+
+    @GetMapping("/{movieId}")
+    public ResponseEntity<List<Theatre>> getTheatresByMovie(
+            @PathVariable Long movieId,
+            @RequestParam(required = false) String city) {
+
+        if (StringUtils.hasText(city)) {
+            return ResponseEntity.ok(theatreRepository.findByMovieIdAndCity(movieId, city));
+        }
+        return ResponseEntity.ok(theatreRepository.findByMovieId(movieId));
+    }
 }

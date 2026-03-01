@@ -24,4 +24,5 @@ public class MovieResponse {
     private String description;
     private String posterUrl;
     private List<String> genres;
+    private String region;
 }

@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS movies (
     release_date DATE,
     certificate  VARCHAR(20),
     description  TEXT,
-    poster_url   VARCHAR(500)
+    poster_url   VARCHAR(500),
+    region       VARCHAR(10) DEFAULT 'IN'
 );
 
 CREATE TABLE IF NOT EXISTS genres (
@@ -90,5 +91,7 @@ CREATE TABLE IF NOT EXISTS booking_seats (
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_users_email      ON users(email);
 CREATE INDEX IF NOT EXISTS idx_movies_tmdb_id   ON movies(tmdb_id);
+CREATE INDEX IF NOT EXISTS idx_movies_region    ON movies(region);
+CREATE INDEX IF NOT EXISTS idx_movies_language  ON movies(language);
 CREATE INDEX IF NOT EXISTS idx_theatres_city    ON theatres(city);
 CREATE INDEX IF NOT EXISTS idx_shows_show_time  ON shows(show_time);

@@ -19,6 +19,10 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
     List<Movie> findByLanguage(String language);
 
+    List<Movie> findByRegion(String region);
+
+    List<Movie> findByRegionAndLanguage(String region, String language);
+
     @Query("SELECT DISTINCT m FROM Movie m JOIN m.shows s JOIN s.screen sc JOIN sc.theatre t WHERE t.city = :city")
     List<Movie> findMoviesByCity(@Param("city") String city);
 

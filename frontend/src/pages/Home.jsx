@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { getMovies, getTrendingMovies, syncGenres, syncMovies } from '../services/api';
 import MovieCard from '../components/MovieCard';
 import FilterBar from '../components/FilterBar';
+import RegionSelector from '../components/RegionSelector';
+import TrendingMovies from '../components/TrendingMovies';
 
 export default function Home() {
   const [movies, setMovies] = useState([]);
@@ -11,19 +13,26 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [syncing, setSyncing] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState(() => localStorage.getItem('selectedRegion') || 'IN');
   const [searchParams] = useSearchParams();
   const selectedCity = searchParams.get('city') || '';
 
   useEffect(() => {
+    localStorage.setItem('selectedRegion', selectedRegion);
     fetchMovies();
     fetchTrending();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCity]);
+  }, [selectedCity, selectedRegion]);
 
   const fetchMovies = async () => {
     setLoading(true);
     try {
-      const params = selectedCity ? { city: selectedCity } : {};
+      const params = {};
+      if (selectedCity) {
+        params.city = selectedCity;
+      } else if (selectedRegion) {
+        params.region = selectedRegion;
+      }
       const res = await getMovies(params);
       setMovies(res.data);
       setFilteredMovies(res.data);
@@ -37,7 +46,7 @@ export default function Home() {
   const fetchTrending = async () => {
     try {
       const res = await getTrendingMovies();
-      setTrending(res.data.slice(0, 6));
+      setTrending(res.data.slice(0, 10));
     } catch {
       // trending is optional
     }
@@ -85,6 +94,11 @@ export default function Home() {
                     {featuredMovie.certificate}
                   </span>
                 )}
+                {featuredMovie.region && (
+                  <span className="bg-blue-800 text-blue-200 text-xs px-2 py-0.5 rounded">
+                    {featuredMovie.region}
+                  </span>
+                )}
               </div>
               <p className="text-gray-300 text-sm line-clamp-2">{featuredMovie.description}</p>
             </div>
@@ -93,7 +107,16 @@ export default function Home() {
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Filter Bar */}
+        {/* Region & Filter Bar */}
+        <div className="flex flex-wrap items-center gap-4 mb-6">
+          <RegionSelector selectedRegion={selectedRegion} onChange={setSelectedRegion} />
+          {selectedCity && (
+            <span className="text-yellow-400 text-xs">
+              📍 City filter active — showing movies in <strong>{selectedCity}</strong>
+            </span>
+          )}
+        </div>
+
         <FilterBar movies={movies} onFilter={setFilteredMovies} />
 
         {/* Error */}
@@ -103,11 +126,14 @@ export default function Home() {
           </div>
         )}
 
+        {/* Trending Movies */}
+        <TrendingMovies movies={trending} />
+
         {/* Now Playing */}
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-white">
-              🎬 Now Playing
+              🎬 {selectedCity ? `Now Playing in ${selectedCity}` : 'Now Playing'}
               <span className="text-gray-500 text-base font-normal ml-2">({filteredMovies.length} movies)</span>
             </h2>
             <button
@@ -144,18 +170,6 @@ export default function Home() {
             </div>
           )}
         </section>
-
-        {/* Trending Movies */}
-        {trending.length > 0 && (
-          <section>
-            <h2 className="text-2xl font-bold text-white mb-6">🔥 Trending</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {trending.map((movie) => (
-                <MovieCard key={movie.movieId} movie={movie} />
-              ))}
-            </div>
-          </section>
-        )}
       </div>
     </div>
   );

@@ -79,27 +79,32 @@ public class TMDBService {
 
     @SuppressWarnings("unchecked")
     public void syncMovies() {
+        syncMoviesByRegion("IN", List.of("te", "hi", "ta"));
+    }
+
+    @SuppressWarnings("unchecked")
+    public void syncMoviesByRegion(String region, List<String> languages) {
         if ("YOUR_TMDB_API_KEY".equals(apiKey) || apiKey == null || apiKey.isBlank()) {
             logger.warn("TMDB API key not configured. Skipping movie sync.");
             return;
         }
 
         try {
-            // Now playing in India (region-based)
-            syncMoviesFromUrl(baseUrl + "/movie/now_playing?api_key=" + apiKey + "&language=en-US&region=IN&page=1");
-            syncMoviesFromUrl(baseUrl + "/movie/now_playing?api_key=" + apiKey + "&language=en-US&region=IN&page=2");
+            // Now playing in the given region
+            syncMoviesFromUrl(baseUrl + "/movie/now_playing?api_key=" + apiKey + "&language=en-US&region=" + region + "&page=1", region);
+            syncMoviesFromUrl(baseUrl + "/movie/now_playing?api_key=" + apiKey + "&language=en-US&region=" + region + "&page=2", region);
 
-            // Trending this week
-            syncMoviesFromUrl(baseUrl + "/trending/movie/week?api_key=" + apiKey);
+            // Trending this week (no region filter in TMDB)
+            syncMoviesFromUrl(baseUrl + "/trending/movie/week?api_key=" + apiKey, region);
 
             // Regional language movies
-            for (String lang : List.of("te", "hi", "ta")) {
+            for (String lang : languages) {
                 syncMoviesFromUrl(baseUrl + "/discover/movie?api_key=" + apiKey
-                        + "&with_original_language=" + lang + "&sort_by=popularity.desc&page=1");
+                        + "&with_original_language=" + lang + "&region=" + region + "&sort_by=popularity.desc&page=1", region);
             }
 
             // Popular movies as fallback
-            syncMoviesFromEndpoint("/movie/popular");
+            syncMoviesFromEndpoint("/movie/popular", region);
         } catch (Exception e) {
             logger.error("Failed to sync movies from TMDB: {}", e.getMessage());
         }
@@ -115,14 +120,14 @@ public class TMDBService {
     }
 
     @SuppressWarnings("unchecked")
-    private void syncMoviesFromUrl(String url) {
+    private void syncMoviesFromUrl(String url, String region) {
         try {
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);
             if (response == null || !response.containsKey("results")) return;
 
             List<Map<String, Object>> results = (List<Map<String, Object>>) response.get("results");
             for (Map<String, Object> movieData : results) {
-                saveOrUpdateMovie(movieData);
+                saveOrUpdateMovie(movieData, region);
             }
             logger.info("Synced movies from URL: {}", url.replaceAll("api_key=[^&]+", "api_key=***"));
         } catch (Exception e) {
@@ -131,7 +136,7 @@ public class TMDBService {
     }
 
     @SuppressWarnings("unchecked")
-    private void syncMoviesFromEndpoint(String endpoint) {
+    private void syncMoviesFromEndpoint(String endpoint, String region) {
         for (int page = 1; page <= 3; page++) {
             String url = baseUrl + endpoint + "?api_key=" + apiKey + "&language=en-US&page=" + page;
             try {
@@ -140,7 +145,7 @@ public class TMDBService {
 
                 List<Map<String, Object>> results = (List<Map<String, Object>>) response.get("results");
                 for (Map<String, Object> movieData : results) {
-                    saveOrUpdateMovie(movieData);
+                    saveOrUpdateMovie(movieData, region);
                 }
                 logger.info("Synced page {} from {}", page, endpoint);
             } catch (Exception e) {
@@ -150,7 +155,7 @@ public class TMDBService {
     }
 
     @SuppressWarnings("unchecked")
-    private void saveOrUpdateMovie(Map<String, Object> data) {
+    private void saveOrUpdateMovie(Map<String, Object> data, String region) {
         Integer tmdbId = (Integer) data.get("id");
         if (tmdbId == null) return;
 
@@ -179,6 +184,7 @@ public class TMDBService {
         }
 
         movie.setLanguage((String) data.getOrDefault("original_language", "en"));
+        movie.setRegion(region);
 
         // Resolve genres
         List<Integer> genreIds = (List<Integer>) data.get("genre_ids");
