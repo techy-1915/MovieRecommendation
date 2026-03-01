@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { getMovie, getTheatresForMovie } from '../services/api';
 import HowManySeatsModal from '../components/HowManySeatsModal';
+import NeonBadge from '../components/NeonBadge';
+import { FullPageLoader } from '../components/LoadingSpinner';
+import { staggerContainer, staggerItem } from '../utils/animations';
 
 // ── Utility helpers ──────────────────────────────────────────────────────────
 
@@ -18,7 +22,6 @@ function getDayName(dateObj) {
   return dateObj.toLocaleDateString('en-IN', { weekday: 'short' }).toUpperCase();
 }
 
-// Build an array of the next 7 days starting from today
 function getNext7Days() {
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
@@ -71,7 +74,6 @@ export default function Showtimes() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // Filter shows by selected date and (if provided) language/format
   const filteredTheatres = theatres
     .map((theatre) => ({
       ...theatre,
@@ -99,19 +101,13 @@ export default function Showtimes() {
     }
   };
 
-  // ── Loading / Error states ───────────────────────────────────────────────
-
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh] bg-dark">
-        <div className="text-gray-400 text-lg">Loading showtimes…</div>
-      </div>
-    );
+    return <FullPageLoader text="Loading showtimes..." />;
   }
 
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh] bg-dark">
+      <div className="flex justify-center items-center min-h-[60vh]">
         <div className="text-red-400 text-lg">{error}</div>
       </div>
     );
@@ -119,23 +115,27 @@ export default function Showtimes() {
 
   if (!movie) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh] bg-dark">
+      <div className="flex justify-center items-center min-h-[60vh]">
         <div className="text-red-400 text-lg">Movie not found.</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-dark text-white">
-      {/* ── 1. Header ─────────────────────────────────────────────────────── */}
-      <div className="bg-card py-6 px-4">
+    <div className="min-h-screen text-white" style={{ background: '#0a0a0a' }}>
+      {/* ── Header ───────────────────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-panel border-b border-white/5 py-6 px-4"
+      >
         <div className="max-w-4xl mx-auto">
           <button
             onClick={() => navigate(-1)}
-            className="text-gray-400 hover:text-white text-xl mb-3 flex items-center gap-2 transition-colors"
+            className="text-gray-400 hover:text-neon-red text-sm mb-3 flex items-center gap-2 transition-colors"
             aria-label="Go back"
           >
-            ← <span className="text-sm">Back</span>
+            ← <span>Back</span>
           </button>
 
           <h1 className="text-2xl sm:text-3xl font-bold text-white">{movie.title}</h1>
@@ -148,58 +148,64 @@ export default function Showtimes() {
 
           <div className="flex flex-wrap gap-2 mt-3">
             {movie.duration && (
-              <span className="bg-gray-800 text-gray-300 text-xs px-3 py-1 rounded-full">
-                ⏱ {movie.duration} min
-              </span>
+              <NeonBadge variant="gray">⏱ {movie.duration} min</NeonBadge>
             )}
             {movie.certificate && (
-              <span className="bg-gray-800 text-gray-300 text-xs px-3 py-1 rounded-full">
-                {movie.certificate}
-              </span>
+              <NeonBadge variant="gold">{movie.certificate}</NeonBadge>
             )}
             {(movie.genres || []).map((g) => (
-              <span key={g} className="bg-gray-800 text-gray-300 text-xs px-3 py-1 rounded-full">
+              <span key={g} className="holographic text-xs text-white/80 px-2.5 py-0.5 rounded-full border border-white/10">
                 {g}
               </span>
             ))}
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* ── 2. Date selector ──────────────────────────────────────────────── */}
-      <div className="bg-gray-900/50 border-b border-gray-800">
+      {/* ── Date selector ────────────────────────────────────────────────── */}
+      <div className="border-b border-white/5" style={{ background: 'rgba(26,26,26,0.5)' }}>
         <div className="max-w-4xl mx-auto flex gap-2 overflow-x-auto py-4 px-4 scrollbar-hide">
-          {days.map((day) => {
+          {days.map((day, i) => {
             const isSelected = isSameDay(day, selectedDate);
             return (
-              <button
+              <motion.button
                 key={day.toISOString()}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
                 onClick={() => setSelectedDate(day)}
-                className={`flex-none flex flex-col items-center min-w-[64px] px-3 py-2 rounded-xl text-xs transition-colors ${
-                  isSelected
-                    ? 'bg-red-600 text-white'
-                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                }`}
+                className={`
+                  flex-none flex flex-col items-center min-w-[68px] px-3 py-2.5 rounded-xl text-xs transition-all duration-300
+                  ${isSelected
+                    ? 'text-white border border-neon-red/50'
+                    : 'text-gray-400 hover:text-gray-200 border border-transparent glass-panel'
+                  }
+                `}
+                style={isSelected ? {
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  boxShadow: '0 0 20px rgba(239,68,68,0.3)',
+                  borderColor: 'rgba(239,68,68,0.5)',
+                } : {}}
               >
                 <span className="font-semibold">{getDayName(day)}</span>
-                <span className="text-base font-bold leading-tight">
+                <span className={`text-base font-bold leading-tight ${isSelected ? 'text-neon-red' : ''}`}>
                   {String(day.getDate()).padStart(2, '0')}
                 </span>
                 <span>{day.toLocaleDateString('en-IN', { month: 'short' }).toUpperCase()}</span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
       </div>
 
-      {/* ── 3. Filter bar ─────────────────────────────────────────────────── */}
-      <div className="bg-gray-900/30 border-b border-gray-800">
+      {/* ── Filter bar ───────────────────────────────────────────────────── */}
+      <div className="border-b border-white/5" style={{ background: 'rgba(10,10,10,0.8)' }}>
         <div className="max-w-4xl mx-auto flex gap-2 overflow-x-auto py-3 px-4 scrollbar-hide">
           {['Language & Format', 'Price Range', 'Special Formats', 'Preferred Time', 'Sort By'].map(
             (label) => (
               <button
                 key={label}
-                className="flex-none bg-gray-800 text-gray-300 text-xs px-3 py-1.5 rounded-full border border-gray-700 hover:border-gray-500 transition-colors whitespace-nowrap"
+                className="flex-none glass-panel text-gray-300 text-xs px-3 py-1.5 rounded-full hover:border-neon-red/30 hover:text-white transition-all whitespace-nowrap"
               >
                 {label} ▾
               </button>
@@ -208,72 +214,103 @@ export default function Showtimes() {
         </div>
       </div>
 
-      {/* ── 4. Availability legend ────────────────────────────────────────── */}
-      <div className="max-w-4xl mx-auto flex gap-4 px-4 py-2 text-xs text-gray-400">
-        <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-green-500 inline-block" />
+      {/* ── Availability legend ──────────────────────────────────────────── */}
+      <div className="max-w-4xl mx-auto flex gap-4 px-4 py-2 text-xs text-gray-500">
+        <span className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block shadow-[0_0_6px_rgba(34,197,94,0.8)]" />
           AVAILABLE
         </span>
-        <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-yellow-500 inline-block" />
+        <span className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-orange-400 inline-block shadow-[0_0_6px_rgba(249,115,22,0.8)] animate-pulse" />
           FAST FILLING
         </span>
       </div>
 
-      {/* ── 5. Theatre listings ───────────────────────────────────────────── */}
-      <div className="max-w-4xl mx-auto px-4 pb-12 space-y-4">
+      {/* ── Theatre listings ─────────────────────────────────────────────── */}
+      <motion.div
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+        className="max-w-4xl mx-auto px-4 pb-12 space-y-4"
+      >
         {filteredTheatres.length === 0 ? (
-          <div className="bg-card rounded-xl p-10 text-center text-gray-500 mt-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass-panel rounded-2xl p-10 text-center text-gray-500 mt-4 border border-white/5"
+          >
             <div className="text-4xl mb-3">🎭</div>
             <p>No shows available for {formatDate(selectedDate)}.</p>
-          </div>
+          </motion.div>
         ) : (
-          filteredTheatres.map((theatre) => (
-            <div key={theatre.theatreId} className="bg-card rounded-xl p-4">
+          filteredTheatres.map((theatre, theatreIndex) => (
+            <motion.div
+              key={theatre.theatreId}
+              variants={staggerItem}
+              transition={{ delay: theatreIndex * 0.1 }}
+              className="glass-panel rounded-2xl p-5 border border-white/5 hover:border-neon-red/20 transition-all duration-300"
+            >
               {/* Theatre header */}
-              <div className="flex items-start justify-between mb-1">
-                <h3 className="font-semibold text-white text-base">{theatre.theatreName}</h3>
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <h3 className="font-semibold text-white text-base">{theatre.theatreName}</h3>
+                  {theatre.address && (
+                    <p className="text-gray-500 text-xs mt-0.5">{theatre.address}</p>
+                  )}
+                </div>
                 <div className="flex gap-2 text-lg">
-                  <span title="Info" className="cursor-pointer">ℹ️</span>
-                  <span title="Wishlist" className="cursor-pointer">🤍</span>
+                  <span title="Info" className="cursor-pointer hover:scale-110 transition-transform">ℹ️</span>
+                  <span title="Wishlist" className="cursor-pointer hover:scale-110 transition-transform">🤍</span>
                 </div>
               </div>
-              {theatre.address && (
-                <p className="text-gray-500 text-xs mb-3">{theatre.address}</p>
-              )}
 
               {/* Showtimes */}
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3 mt-3">
                 {theatre.shows.map((show) => {
                   const isFastFilling =
                     show.availableSeatsCount != null &&
                     show.availableSeatsCount <= FAST_FILLING_THRESHOLD;
-                  const borderColor = isFastFilling
-                    ? 'border-yellow-500 text-yellow-400'
-                    : 'border-green-600 text-green-400';
 
                   return (
                     <div key={show.showId} className="text-center">
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => handleShowtimeClick(show)}
-                        className={`border ${borderColor} rounded-lg px-4 py-2 min-w-[80px] text-center hover:bg-white/5 transition-colors`}
+                        className={`
+                          rounded-xl px-4 py-2.5 min-w-[80px] text-center transition-all duration-200 border
+                          ${isFastFilling
+                            ? 'border-orange-500/50 text-orange-400 bg-orange-500/10 animate-glow-pulse'
+                            : 'border-green-500/40 text-green-400 bg-green-500/10 hover:bg-green-500/20'
+                          }
+                        `}
+                        style={isFastFilling ? {
+                          boxShadow: '0 0 10px rgba(249,115,22,0.3)',
+                        } : {
+                          boxShadow: '0 0 8px rgba(34,197,94,0.2)',
+                        }}
                       >
                         <div className="font-bold text-sm">{formatTime(show.showTime)}</div>
                         {show.screenType && (
-                          <div className="text-xs text-gray-400">{show.screenType}</div>
+                          <div className="text-xs text-gray-400 mt-0.5">{show.screenType}</div>
                         )}
-                      </button>
-                      <div className="text-xs text-gray-500 mt-1">Non-cancellable</div>
+                        {isFastFilling && show.availableSeatsCount && (
+                          <div className="text-xs text-orange-400 mt-0.5">
+                            {show.availableSeatsCount} left
+                          </div>
+                        )}
+                      </motion.button>
+                      <div className="text-xs text-gray-600 mt-1">Non-cancellable</div>
                     </div>
                   );
                 })}
               </div>
-            </div>
+            </motion.div>
           ))
         )}
-      </div>
+      </motion.div>
 
-      {/* ── 6. How many seats modal ───────────────────────────────────────── */}
+      {/* ── How many seats modal ─────────────────────────────────────────── */}
       {showHowManySeatsModal && (
         <HowManySeatsModal
           basePrice={selectedShow?.price}
