@@ -4,6 +4,8 @@ import com.moviebooking.dto.TheatreWithShowsResponse;
 import com.moviebooking.model.Theatre;
 import com.moviebooking.repository.TheatreRepository;
 import com.moviebooking.service.TheatreService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -14,6 +16,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/theatres")
 public class TheatreController {
+
+    private static final Logger logger = LoggerFactory.getLogger(TheatreController.class);
 
     @Autowired
     private TheatreRepository theatreRepository;
@@ -27,6 +31,7 @@ public class TheatreController {
             @RequestParam(required = false) String city) {
 
         if (movieId != null) {
+            logger.info("GET /api/theatres with movieId={}, city={}", movieId, city);
             return ResponseEntity.ok(theatreService.getTheatresForMovie(movieId, city));
         }
         if (StringUtils.hasText(city)) {
