@@ -149,6 +149,12 @@ curl -X POST http://localhost:8080/api/sync/movies \
 | GET | `/api/shows/{movieId}` | Get shows for a movie |
 | GET | `/api/shows/{movieId}?city=Mumbai` | Filter shows by city |
 
+### Theatres
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/theatres` | List all theatres |
+| GET | `/api/theatres?city=Hyderabad` | Filter theatres by city |
+
 ### Seats
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -166,7 +172,9 @@ curl -X POST http://localhost:8080/api/sync/movies \
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/sync/genres` | Sync genres from TMDB |
-| POST | `/api/sync/movies` | Sync movies from TMDB |
+| POST | `/api/sync/movies` | Sync movies from TMDB (now_playing region=IN, trending/week, te/hi/ta discover) |
+
+> **Automatic sync:** The server also syncs genres and movies automatically every **6 hours** via `@Scheduled`.
 
 ---
 
