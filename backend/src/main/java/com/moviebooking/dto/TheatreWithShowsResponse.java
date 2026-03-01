@@ -16,4 +16,7 @@ public class TheatreWithShowsResponse {
     private String city;
     private String address;
     private List<ShowSummaryResponse> shows;
+    private Double distanceInKm;
+    private Double latitude;
+    private Double longitude;
 }

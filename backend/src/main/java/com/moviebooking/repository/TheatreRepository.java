@@ -7,11 +7,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TheatreRepository extends JpaRepository<Theatre, Long> {
 
     List<Theatre> findByCity(String city);
+
+    Optional<Theatre> findByMovieGluId(String movieGluId);
 
     @Query("SELECT DISTINCT s.screen.theatre FROM Show s WHERE s.movie.movieId = :movieId AND s.screen.theatre.city = :city")
     List<Theatre> findByMovieIdAndCity(@Param("movieId") Long movieId, @Param("city") String city);

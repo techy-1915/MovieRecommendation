@@ -18,8 +18,15 @@ export const PLACEHOLDER_POSTER = 'https://via.placeholder.com/300x450/1a1a1a/DC
 export const getMovies = (params) => api.get('/api/movies', { params });
 export const getMovie = (id) => api.get(`/api/movies/${id}`);
 export const getTrendingMovies = () => api.get('/api/movies/trending');
-export const getTheatresForMovie = (movieId, city) =>
-  api.get('/api/theatres', { params: { movieId, ...(city ? { city } : {}) } });
+export const getTheatresForMovie = (movieId, city, lat, lng) =>
+  api.get('/api/theatres', {
+    params: {
+      movieId,
+      ...(city ? { city } : {}),
+      ...(lat != null ? { lat } : {}),
+      ...(lng != null ? { lng } : {}),
+    },
+  });
 export const getShows = (movieId, city) =>
   api.get(`/api/shows/${movieId}`, { params: city ? { city } : {} });
 export const getSeats = (showId) => api.get(`/api/seats/${showId}`);
@@ -36,5 +43,9 @@ export const getProfile = () => api.get('/api/auth/profile');
 export const syncGenres = () => api.post('/api/sync/genres');
 export const syncMovies = () => api.post('/api/sync/movies');
 export const regenerateShows = () => api.post('/api/sync/regenerate-shows');
+export const syncMovieglu = (lat, lng) =>
+  api.post('/api/sync/movieglu', null, {
+    params: { lat, lng },
+  });
 
 export default api;

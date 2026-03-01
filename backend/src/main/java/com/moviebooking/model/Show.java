@@ -39,6 +39,12 @@ public class Show {
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Column(name = "experience_type", length = 50)
+    private String experienceType;
+
+    @Column(name = "price_tier", length = 20)
+    private String priceTier;
+
     @JsonIgnore
     @OneToMany(mappedBy = "show", fetch = FetchType.LAZY)
     private List<Booking> bookings = new ArrayList<>();

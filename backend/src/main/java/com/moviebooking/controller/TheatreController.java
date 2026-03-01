@@ -28,10 +28,15 @@ public class TheatreController {
     @GetMapping
     public ResponseEntity<?> getTheatres(
             @RequestParam(required = false) Long movieId,
-            @RequestParam(required = false) String city) {
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) Double lat,
+            @RequestParam(required = false) Double lng) {
 
         if (movieId != null) {
-            logger.info("GET /api/theatres with movieId={}, city={}", movieId, city);
+            logger.info("GET /api/theatres with movieId={}, city={}, lat={}, lng={}", movieId, city, lat, lng);
+            if (lat != null && lng != null) {
+                return ResponseEntity.ok(theatreService.getTheatresForMovieNearby(movieId, lat, lng));
+            }
             return ResponseEntity.ok(theatreService.getTheatresForMovie(movieId, city));
         }
         if (StringUtils.hasText(city)) {

@@ -11,7 +11,30 @@ function getCategoryLabel(seatType) {
 const CATEGORY_ORDER = ['GOLD', 'STANDARD'];
 const CATEGORY_PRICE = { GOLD: 350, STANDARD: 200 };
 
-export default function SeatGrid({ seats, selectedSeats, onSeatToggle, pricePerSeat }) {
+/**
+ * Given a row of seats, a clicked seat ID, and the desired total count,
+ * find the best block of `count` adjacent available seats that includes the clicked seat.
+ * Uses a single forward pass from the first valid starting position.
+ * Returns an array of seatIds, or null if no valid block exists.
+ */
+function findAdjacentBlock(rowSeats, seatId, count) {
+  const idx = rowSeats.findIndex((s) => s.seatId === seatId);
+  if (idx === -1) return null;
+
+  // Start as early as possible while still covering the clicked seat
+  const startMin = Math.max(0, idx - count + 1);
+  const startMax = Math.min(idx, rowSeats.length - count);
+
+  for (let start = startMin; start <= startMax; start++) {
+    const block = rowSeats.slice(start, start + count);
+    if (block.length === count && block.every((s) => !s.isBooked)) {
+      return block.map((s) => s.seatId);
+    }
+  }
+  return null;
+}
+
+export default function SeatGrid({ seats, selectedSeats, onSeatToggle, pricePerSeat, desiredCount }) {
   // Group seats by category, then by row
   const categories = useMemo(() => {
     const catMap = {};
@@ -30,19 +53,48 @@ export default function SeatGrid({ seats, selectedSeats, onSeatToggle, pricePerS
     return catMap;
   }, [seats]);
 
+  // Build a flat lookup: seatId → rowSeats (all seats in same row)
+  const rowBySeatId = useMemo(() => {
+    const map = {};
+    Object.values(categories).forEach((rows) => {
+      Object.values(rows).forEach((rowSeats) => {
+        rowSeats.forEach((s) => { map[s.seatId] = rowSeats; });
+      });
+    });
+    return map;
+  }, [categories]);
+
   const getSeatClasses = (seat) => {
     if (seat.isBooked) {
       return 'bg-gray-600 border-gray-500 text-gray-500 cursor-not-allowed';
     }
     if (selectedSeats.includes(seat.seatId)) {
-      return 'bg-green-600 border-green-500 text-white cursor-pointer';
+      return 'bg-green-600 border-green-500 text-white cursor-pointer ring-2 ring-green-400';
     }
     return 'bg-transparent border-green-600 text-green-400 cursor-pointer hover:bg-green-900/30';
   };
 
   const handleSeatClick = (seat) => {
     if (seat.isBooked) return;
-    onSeatToggle(seat.seatId);
+
+    const count = desiredCount && desiredCount > 1 ? desiredCount : 1;
+
+    if (count === 1) {
+      onSeatToggle(seat.seatId);
+      return;
+    }
+
+    // Multi-seat: try to auto-select adjacent block
+    const rowSeats = rowBySeatId[seat.seatId] || [];
+    const block = findAdjacentBlock(rowSeats, seat.seatId, count);
+
+    if (block) {
+      // Replace current selection with this block
+      onSeatToggle(block);
+    } else {
+      // No adjacent block found — fall back to individual toggle
+      onSeatToggle(seat.seatId);
+    }
   };
 
   return (
@@ -104,7 +156,7 @@ export default function SeatGrid({ seats, selectedSeats, onSeatToggle, pricePerS
           <span className="text-gray-400">Available</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded border border-green-500 bg-green-600" />
+          <div className="w-6 h-6 rounded border border-green-500 bg-green-600 ring-2 ring-green-400" />
           <span className="text-gray-400">Selected</span>
         </div>
         <div className="flex items-center gap-2">
@@ -115,4 +167,3 @@ export default function SeatGrid({ seats, selectedSeats, onSeatToggle, pricePerS
     </div>
   );
 }
-

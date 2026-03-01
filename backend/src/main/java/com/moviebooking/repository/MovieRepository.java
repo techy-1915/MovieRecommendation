@@ -15,6 +15,8 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
     Optional<Movie> findByTmdbId(Integer tmdbId);
 
+    Optional<Movie> findByTitleIgnoreCase(String title);
+
     List<Movie> findByGenres_GenreName(String genreName);
 
     List<Movie> findByLanguage(String language);

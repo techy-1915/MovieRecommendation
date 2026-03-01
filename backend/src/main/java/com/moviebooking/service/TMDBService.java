@@ -41,6 +41,9 @@ public class TMDBService {
     @Autowired
     private ShowGenerationService showGenerationService;
 
+    @Autowired
+    private MovieGluService movieGluService;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     @EventListener(ApplicationReadyEvent.class)
@@ -205,7 +208,9 @@ public class TMDBService {
 
         boolean isNew = movie.getMovieId() == null;
         movieRepository.save(movie);
-        if (isNew) {
+        // Only generate mock shows when MovieGlu integration is not configured;
+        // with MovieGlu, real showtime data is synced via POST /api/sync/movieglu.
+        if (isNew && !movieGluService.isConfigured()) {
             showGenerationService.generateShowsForMovie(movie);
         }
     }

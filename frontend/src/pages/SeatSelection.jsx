@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSeats } from '../services/api';
 import SeatGrid from '../components/SeatGrid';
@@ -9,7 +9,11 @@ import { FullPageLoader } from '../components/LoadingSpinner';
 export default function SeatSelection() {
   const { showId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isAuthenticated } = useAuth();
+
+  // Number of seats the user wants to book (from previous screen)
+  const desiredCount = parseInt(searchParams.get('seats') || '1', 10);
 
   const [pricePerSeat] = useState(200);
   const [seats, setSeats] = useState([]);
@@ -42,15 +46,32 @@ export default function SeatSelection() {
     }
   };
 
-  const handleSeatToggle = (seatId) => {
-    setSelectedSeats((prev) =>
-      prev.includes(seatId) ? prev.filter((id) => id !== seatId) : [...prev, seatId]
-    );
+  /**
+   * Handles seat selection from SeatGrid.
+   * - When SeatGrid finds an adjacent block it passes an array of seatIds.
+   * - For individual toggles it passes a single seatId.
+   */
+  const handleSeatToggle = (seatIdOrBlock) => {
+    if (Array.isArray(seatIdOrBlock)) {
+      // Replace selection with the auto-selected adjacent block
+      setSelectedSeats(seatIdOrBlock);
+    } else {
+      setSelectedSeats((prev) =>
+        prev.includes(seatIdOrBlock)
+          ? prev.filter((id) => id !== seatIdOrBlock)
+          : [...prev, seatIdOrBlock]
+      );
+    }
+    setError(null);
   };
 
   const handleProceed = () => {
     if (selectedSeats.length === 0) {
       setError('Please select at least one seat.');
+      return;
+    }
+    if (selectedSeats.length !== desiredCount) {
+      setError(`Please select exactly ${desiredCount} seat(s). You have selected ${selectedSeats.length}.`);
       return;
     }
 
@@ -113,7 +134,9 @@ export default function SeatSelection() {
         </button>
         <div className="flex-1 min-w-0">
           <p className="text-white font-semibold text-sm truncate">Show #{showId}</p>
-          <p className="text-gray-500 text-xs">Select your seats</p>
+          <p className="text-gray-500 text-xs">
+            Select {desiredCount} seat{desiredCount !== 1 ? 's' : ''}
+          </p>
         </div>
         <AnimatePresence>
           {selectedSeats.length > 0 && (
@@ -128,7 +151,7 @@ export default function SeatSelection() {
                 boxShadow: '0 0 10px rgba(239,68,68,0.3)',
               }}
             >
-              {selectedSeats.length} Ticket{selectedSeats.length > 1 ? 's' : ''}
+              {selectedSeats.length} / {desiredCount} Ticket{desiredCount !== 1 ? 's' : ''}
             </motion.span>
           )}
         </AnimatePresence>
@@ -153,6 +176,15 @@ export default function SeatSelection() {
         </div>
       </motion.div>
 
+      {/* ── Auto-selection hint ───────────────────────────────────────────── */}
+      {desiredCount > 1 && (
+        <div className="max-w-2xl mx-auto px-4 pb-1">
+          <p className="text-gray-500 text-xs text-center">
+            💡 Tap any seat to auto-select {desiredCount} adjacent seats in the same row.
+          </p>
+        </div>
+      )}
+
       {/* ── Seat grid area ───────────────────────────────────────────────── */}
       <div className="flex-1 py-4 px-4 overflow-y-auto">
         <div className="max-w-2xl mx-auto">
@@ -169,6 +201,7 @@ export default function SeatSelection() {
                 selectedSeats={selectedSeats}
                 onSeatToggle={handleSeatToggle}
                 pricePerSeat={pricePerSeat}
+                desiredCount={desiredCount}
               />
 
               <AnimatePresence>
