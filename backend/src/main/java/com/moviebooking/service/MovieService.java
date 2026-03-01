@@ -41,6 +41,18 @@ public class MovieService {
                 .collect(Collectors.toList());
     }
 
+    public List<MovieResponse> getMoviesByRegion(String region) {
+        return movieRepository.findByRegion(region).stream()
+                .map(this::toMovieResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<MovieResponse> getMoviesByRegionAndLanguage(String region, String language) {
+        return movieRepository.findByRegionAndLanguage(region, language).stream()
+                .map(this::toMovieResponse)
+                .collect(Collectors.toList());
+    }
+
     public List<MovieResponse> getMoviesByCity(String city) {
         return movieRepository.findMoviesByCity(city).stream()
                 .map(this::toMovieResponse)
@@ -75,7 +87,8 @@ public class MovieService {
                 movie.getCertificate(),
                 movie.getDescription(),
                 movie.getPosterUrl(),
-                genreNames
+                genreNames,
+                movie.getRegion()
         );
     }
 }

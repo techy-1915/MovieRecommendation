@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { login as apiLogin, register as apiRegister } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -11,6 +11,8 @@ export default function Auth() {
 
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -27,14 +29,14 @@ export default function Auth() {
         const res = await apiLogin({ email: formData.email, password: formData.password });
         const { token, userId, name, email } = res.data;
         login(token, { userId, name, email });
-        navigate('/');
+        navigate(redirectTo);
       } else {
         await apiRegister(formData);
         // Auto-login after register
         const res = await apiLogin({ email: formData.email, password: formData.password });
         const { token, userId, name, email } = res.data;
         login(token, { userId, name, email });
-        navigate('/');
+        navigate(redirectTo);
       }
     } catch (err) {
       setError(

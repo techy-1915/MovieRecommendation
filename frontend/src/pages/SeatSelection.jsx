@@ -41,7 +41,7 @@ export default function SeatSelection() {
 
   const handleProceed = async () => {
     if (!isAuthenticated) {
-      navigate('/auth');
+      navigate(`/auth?redirect=${encodeURIComponent(`/booking/${showId}`)}`);
       return;
     }
     if (selectedSeats.length === 0) {
