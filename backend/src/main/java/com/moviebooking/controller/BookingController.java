@@ -1,6 +1,7 @@
 package com.moviebooking.controller;
 
 import com.moviebooking.dto.BookingRequest;
+import com.moviebooking.dto.BookingResponse;
 import com.moviebooking.exception.ResourceNotFoundException;
 import com.moviebooking.model.Booking;
 import com.moviebooking.repository.BookingRepository;
@@ -35,7 +36,7 @@ public class BookingController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Booking>> getUserBookings(@PathVariable Long userId) {
+    public ResponseEntity<List<BookingResponse>> getUserBookings(@PathVariable Long userId) {
         return ResponseEntity.ok(bookingService.getUserBookings(userId));
     }
 

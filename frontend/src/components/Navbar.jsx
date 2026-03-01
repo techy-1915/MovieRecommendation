@@ -55,7 +55,7 @@ export default function Navbar() {
               <>
                 <span className="text-gray-400 text-sm">Hi, {user?.name}</span>
                 <Link
-                  to={`/bookings/user/${user?.userId}`}
+                  to="/my-bookings"
                   className="text-gray-300 hover:text-white text-sm transition-colors"
                 >
                   My Bookings

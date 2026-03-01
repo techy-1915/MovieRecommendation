@@ -8,6 +8,7 @@ import MovieDetails from './pages/MovieDetails';
 import SeatSelection from './pages/SeatSelection';
 import Auth from './pages/Auth';
 import BookingConfirmation from './pages/BookingConfirmation';
+import MyBookings from './pages/MyBookings';
 
 function App() {
   return (
@@ -32,6 +33,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <BookingConfirmation />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-bookings"
+              element={
+                <ProtectedRoute>
+                  <MyBookings />
                 </ProtectedRoute>
               }
             />

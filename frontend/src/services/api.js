@@ -18,6 +18,8 @@ export const PLACEHOLDER_POSTER = 'https://via.placeholder.com/300x450/1a1a1a/DC
 export const getMovies = (params) => api.get('/api/movies', { params });
 export const getMovie = (id) => api.get(`/api/movies/${id}`);
 export const getTrendingMovies = () => api.get('/api/movies/trending');
+export const getTheatresForMovie = (movieId, city) =>
+  api.get('/api/theatres', { params: { movieId, ...(city ? { city } : {}) } });
 export const getShows = (movieId, city) =>
   api.get(`/api/shows/${movieId}`, { params: city ? { city } : {} });
 export const getSeats = (showId) => api.get(`/api/seats/${showId}`);

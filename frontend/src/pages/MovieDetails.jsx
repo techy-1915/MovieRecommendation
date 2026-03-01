@@ -1,35 +1,55 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { getMovie, getShows, PLACEHOLDER_POSTER } from '../services/api';
-import ShowTimeCard from '../components/ShowTimeCard';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getMovie, getTheatresForMovie, PLACEHOLDER_POSTER } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function MovieDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [movie, setMovie] = useState(null);
-  const [shows, setShows] = useState([]);
+  const [theatres, setTheatres] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCity, setSelectedCity] = useState('');
   const CITIES = ['', 'Mumbai', 'Delhi', 'Hyderabad'];
 
   useEffect(() => {
-    fetchMovieAndShows();
+    fetchMovieAndTheatres();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, selectedCity]);
 
-  const fetchMovieAndShows = async () => {
+  const fetchMovieAndTheatres = async () => {
     setLoading(true);
     try {
-      const [movieRes, showsRes] = await Promise.all([
+      const [movieRes, theatresRes] = await Promise.all([
         getMovie(id),
-        getShows(id, selectedCity || undefined),
+        getTheatresForMovie(id, selectedCity || undefined),
       ]);
       setMovie(movieRes.data);
-      setShows(showsRes.data);
+      setTheatres(theatresRes.data);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBookShow = (showId) => {
+    if (!isAuthenticated) {
+      navigate(`/auth?redirect=${encodeURIComponent(`/booking/${showId}`)}`);
+      return;
+    }
+    navigate(`/booking/${showId}`);
+  };
+
+  const formatTime = (dateTimeStr) => {
+    const date = new Date(dateTimeStr);
+    return date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const formatDate = (dateTimeStr) => {
+    const date = new Date(dateTimeStr);
+    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
   };
 
   if (loading) {
@@ -47,14 +67,6 @@ export default function MovieDetails() {
       </div>
     );
   }
-
-  // Group shows by theatre
-  const showsByTheatre = shows.reduce((acc, show) => {
-    const key = show.theatreName;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(show);
-    return acc;
-  }, {});
 
   return (
     <div className="min-h-screen bg-dark">
@@ -121,13 +133,13 @@ export default function MovieDetails() {
           </div>
         </div>
 
-        {/* Show Timings */}
+        {/* Theatre & Show Timings */}
         <div className="mt-10">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
             <h2 className="text-2xl font-bold text-white">🎟️ Book Tickets</h2>
             {/* City filter */}
-            <div className="flex gap-2">
-              {[{ label: 'All', value: '' }, ...CITIES.slice(1).map(c => ({ label: c, value: c }))].map(({ label, value }) => (
+            <div className="flex gap-2 flex-wrap">
+              {[{ label: 'All Cities', value: '' }, ...CITIES.slice(1).map(c => ({ label: c, value: c }))].map(({ label, value }) => (
                 <button
                   key={value}
                   onClick={() => setSelectedCity(value)}
@@ -143,20 +155,37 @@ export default function MovieDetails() {
             </div>
           </div>
 
-          {shows.length === 0 ? (
+          {theatres.length === 0 ? (
             <div className="bg-card rounded-xl p-8 text-center text-gray-500">
               <div className="text-4xl mb-2">🎭</div>
               <p>No shows available{selectedCity ? ` in ${selectedCity}` : ''}.</p>
             </div>
           ) : (
-            Object.entries(showsByTheatre).map(([theatreName, theatreShows]) => (
-              <div key={theatreName} className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-200 mb-3 flex items-center gap-2">
-                  🏛️ {theatreName}
-                </h3>
-                <div className="flex flex-col gap-3">
-                  {theatreShows.map((show) => (
-                    <ShowTimeCard key={show.showId} show={show} />
+            theatres.map((theatre) => (
+              <div key={theatre.theatreId} className="mb-6 bg-card rounded-xl p-5">
+                <div className="mb-3">
+                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                    🏛️ {theatre.theatreName}
+                  </h3>
+                  {theatre.address && (
+                    <p className="text-gray-500 text-xs mt-1">📍 {theatre.address}</p>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {theatre.shows.map((show) => (
+                    <div key={show.showId} className="text-center">
+                      <button
+                        onClick={() => handleBookShow(show.showId)}
+                        className="bg-gray-800 hover:bg-primary border border-gray-700 hover:border-primary text-white rounded-lg px-4 py-3 transition-colors group min-w-[90px]"
+                      >
+                        <div className="text-sm font-bold">{formatTime(show.showTime)}</div>
+                        <div className="text-xs text-gray-400 group-hover:text-gray-200">{formatDate(show.showTime)}</div>
+                        <div className="text-xs text-green-400 mt-1">₹{show.price}</div>
+                      </button>
+                      <div className={`text-xs mt-1 ${show.availableSeatsCount > 10 ? 'text-green-500' : show.availableSeatsCount > 0 ? 'text-yellow-500' : 'text-red-500'}`}>
+                        {show.availableSeatsCount > 0 ? `${show.availableSeatsCount} seats` : 'Sold out'}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -167,3 +196,4 @@ export default function MovieDetails() {
     </div>
   );
 }
+

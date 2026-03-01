@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -60,6 +61,7 @@ public class Movie {
     )
     private List<Genre> genres = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "movie", fetch = FetchType.LAZY)
     private List<Show> shows = new ArrayList<>();
 }

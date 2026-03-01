@@ -38,6 +38,9 @@ public class TMDBService {
     @Autowired
     private MovieRepository movieRepository;
 
+    @Autowired
+    private ShowGenerationService showGenerationService;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     @EventListener(ApplicationReadyEvent.class)
@@ -200,7 +203,11 @@ public class TMDBService {
             movie.setGenres(genres);
         }
 
+        boolean isNew = movie.getMovieId() == null;
         movieRepository.save(movie);
+        if (isNew) {
+            showGenerationService.generateShowsForMovie(movie);
+        }
     }
 
     // Minimal TMDB genre id ↔ name mapping for resolution without extra API call

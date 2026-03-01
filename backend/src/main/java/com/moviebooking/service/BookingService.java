@@ -1,6 +1,7 @@
 package com.moviebooking.service;
 
 import com.moviebooking.dto.BookingRequest;
+import com.moviebooking.dto.BookingResponse;
 import com.moviebooking.exception.ResourceNotFoundException;
 import com.moviebooking.exception.SeatAlreadyBookedException;
 import com.moviebooking.model.*;
@@ -9,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -89,7 +92,34 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
-    public List<Booking> getUserBookings(Long userId) {
-        return bookingRepository.findByUser_UserId(userId);
+    public List<BookingResponse> getUserBookings(Long userId) {
+        List<Booking> bookings = bookingRepository.findByUser_UserId(userId);
+        List<BookingResponse> responses = new ArrayList<>();
+        for (Booking booking : bookings) {
+            Show show = booking.getShow();
+            String movieTitle = show.getMovie().getTitle();
+            String moviePoster = show.getMovie().getPosterUrl();
+            String theatreName = show.getScreen().getTheatre().getTheatreName();
+            String screenName = show.getScreen().getScreenName();
+
+            List<BookingSeat> bookingSeats = bookingSeatRepository.findByBooking_BookingId(booking.getBookingId());
+            List<String> seatLabels = bookingSeats.stream()
+                    .map(bs -> bs.getSeat().getRowNo() + bs.getSeat().getSeatNumber())
+                    .collect(Collectors.toList());
+
+            responses.add(new BookingResponse(
+                    booking.getBookingId(),
+                    movieTitle,
+                    moviePoster,
+                    theatreName,
+                    screenName,
+                    show.getShowTime(),
+                    seatLabels,
+                    booking.getTotalAmount(),
+                    booking.getBookingTime(),
+                    booking.getStatus().name()
+            ));
+        }
+        return responses;
     }
 }
