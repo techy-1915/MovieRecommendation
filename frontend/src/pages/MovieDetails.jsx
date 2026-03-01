@@ -11,7 +11,7 @@ export default function MovieDetails() {
   const [theatres, setTheatres] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCity, setSelectedCity] = useState('');
-  const CITIES = ['', 'Mumbai', 'Delhi', 'Hyderabad'];
+  const CITIES = ['', 'Hyderabad', 'Mumbai', 'Delhi'];
 
   useEffect(() => {
     fetchMovieAndTheatres();

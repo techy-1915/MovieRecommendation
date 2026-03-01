@@ -20,21 +20,10 @@ public class MovieController {
     public ResponseEntity<List<MovieResponse>> getMovies(
             @RequestParam(required = false) String genre,
             @RequestParam(required = false) String language,
-            @RequestParam(required = false) String city,
-            @RequestParam(required = false) String region) {
+            @RequestParam(required = false) String city) {
 
         if (StringUtils.hasText(genre)) {
             return ResponseEntity.ok(movieService.getMoviesByGenre(genre));
-        }
-        if (StringUtils.hasText(region) && StringUtils.hasText(language)) {
-            return ResponseEntity.ok(movieService.getMoviesByRegionAndLanguage(region, language));
-        }
-        if (StringUtils.hasText(region) && StringUtils.hasText(city)) {
-            // City takes precedence over region when both are provided
-            return ResponseEntity.ok(movieService.getMoviesByCity(city));
-        }
-        if (StringUtils.hasText(region)) {
-            return ResponseEntity.ok(movieService.getMoviesByRegion(region));
         }
         if (StringUtils.hasText(language)) {
             return ResponseEntity.ok(movieService.getMoviesByLanguage(language));

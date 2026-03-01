@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import { getMovies, getTrendingMovies, syncGenres, syncMovies } from '../services/api';
 import MovieCard from '../components/MovieCard';
 import FilterBar from '../components/FilterBar';
-import RegionSelector from '../components/RegionSelector';
 import TrendingMovies from '../components/TrendingMovies';
 
 export default function Home() {
@@ -13,16 +12,14 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [syncing, setSyncing] = useState(false);
-  const [selectedRegion, setSelectedRegion] = useState(() => localStorage.getItem('selectedRegion') || 'IN');
   const [searchParams] = useSearchParams();
   const selectedCity = searchParams.get('city') || '';
 
   useEffect(() => {
-    localStorage.setItem('selectedRegion', selectedRegion);
     fetchMovies();
     fetchTrending();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCity, selectedRegion]);
+  }, [selectedCity]);
 
   const fetchMovies = async () => {
     setLoading(true);
@@ -30,8 +27,6 @@ export default function Home() {
       const params = {};
       if (selectedCity) {
         params.city = selectedCity;
-      } else if (selectedRegion) {
-        params.region = selectedRegion;
       }
       const res = await getMovies(params);
       setMovies(res.data);
@@ -107,9 +102,8 @@ export default function Home() {
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Region & Filter Bar */}
+        {/* Filter Bar */}
         <div className="flex flex-wrap items-center gap-4 mb-6">
-          <RegionSelector selectedRegion={selectedRegion} onChange={setSelectedRegion} />
           {selectedCity && (
             <span className="text-yellow-400 text-xs">
               📍 City filter active — showing movies in <strong>{selectedCity}</strong>

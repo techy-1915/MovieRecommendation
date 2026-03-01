@@ -30,34 +30,31 @@ public class ShowGenerationService {
 
     private static final Map<String, List<String[]>> CITY_THEATRES = Map.of(
             "Hyderabad", List.of(
-                    new String[]{"PVR Inorbit", "Inorbit Mall, HITEC City, Hyderabad 500081"},
-                    new String[]{"AMB Cinemas", "Nanakramguda, Financial District, Hyderabad 500032"},
-                    new String[]{"Prasads IMAX", "NTR Marg, Lower Tank Bund, Hyderabad 500063"}
+                    new String[]{"PVR Nexus", "Gachibowli, Hyderabad"},
+                    new String[]{"INOX GVK", "GVK One Mall, Hyderabad"},
+                    new String[]{"AMB Cinemas", "Gachibowli, Hyderabad"}
             ),
             "Mumbai", List.of(
-                    new String[]{"PVR Phoenix", "Phoenix Marketcity, Kurla West, Mumbai 400070"},
-                    new String[]{"Inox Megaplex", "R City Mall, LBS Marg, Ghatkopar, Mumbai 400086"},
-                    new String[]{"Cinepolis Andheri", "Infiniti Mall, New Link Rd, Andheri West, Mumbai 400053"}
+                    new String[]{"PVR Lower Parel", "Lower Parel, Mumbai"},
+                    new String[]{"Cinepolis Andheri", "Andheri West, Mumbai"}
             ),
             "Delhi", List.of(
-                    new String[]{"PVR Saket", "Select Citywalk Mall, Saket, New Delhi 110017"},
-                    new String[]{"Inox Nehru Place", "DT Mega Mall, Nehru Place, New Delhi 110019"},
-                    new String[]{"DLF Promenade", "DLF Promenade Mall, Vasant Kunj, New Delhi 110070"}
+                    new String[]{"INOX Select City Walk", "Saket, Delhi"}
             )
     );
 
-    private static final LocalTime[] SHOW_TIMES = {
-            LocalTime.of(10, 0),
-            LocalTime.of(13, 30),
-            LocalTime.of(17, 0),
-            LocalTime.of(20, 30)
-    };
+    private static final List<LocalTime> SHOW_TIMES = List.of(
+            LocalTime.of(10, 30),  // 10:30 AM
+            LocalTime.of(14, 30),  // 2:30 PM
+            LocalTime.of(18, 30),  // 6:30 PM
+            LocalTime.of(22, 0)    // 10:00 PM
+    );
 
     private static final BigDecimal NORMAL_PRICE = BigDecimal.valueOf(200);
     private static final BigDecimal PREMIUM_PRICE = BigDecimal.valueOf(300);
 
-    private static final String[] ROWS = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
-    private static final int SEATS_PER_ROW = 15;
+    private static final String[] ROWS = {"A", "B", "C", "D", "E", "F"};
+    private static final int SEATS_PER_ROW = 10;
 
     @Autowired
     private TheatreRepository theatreRepository;
@@ -150,7 +147,7 @@ public class ShowGenerationService {
     private void createSeatsForScreen(Screen screen) {
         for (int rowIdx = 0; rowIdx < ROWS.length; rowIdx++) {
             String row = ROWS[rowIdx];
-            Seat.SeatType seatType = rowIdx < 6 ? Seat.SeatType.NORMAL : Seat.SeatType.PREMIUM;
+            Seat.SeatType seatType = rowIdx < 3 ? Seat.SeatType.NORMAL : Seat.SeatType.PREMIUM;
             for (int seatNum = 1; seatNum <= SEATS_PER_ROW; seatNum++) {
                 Seat seat = new Seat();
                 seat.setScreen(screen);
