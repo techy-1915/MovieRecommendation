@@ -24,8 +24,8 @@ export default function SeatSelection() {
       return;
     }
     fetchSeats();
-    // Curtain animation: hide after 1.5s
-    const timer = setTimeout(() => setShowCurtain(false), 1500);
+    // Curtain animation: 1.2s duration + 0.2s delay = 1.4s total
+    const timer = setTimeout(() => setShowCurtain(false), 1400);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showId]);

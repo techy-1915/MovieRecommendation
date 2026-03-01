@@ -95,7 +95,7 @@ export default function BookingConfirmation() {
       <AnimatePresence>
         {showConfetti && (
           <>
-            {Array.from({ length: 40 }).map((_, i) => (
+            {Array.from({ length: 25 }).map((_, i) => (
               <ConfettiParticle key={i} index={i} />
             ))}
           </>

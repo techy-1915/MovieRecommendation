@@ -81,12 +81,19 @@ export default function Home() {
     }
   };
 
+  const rafRef = useRef(null);
   const handleHeroMouseMove = useCallback((e) => {
     if (!heroRef.current) return;
-    const rect = heroRef.current.getBoundingClientRect();
-    setSpotlightPos({
-      x: `${e.clientX - rect.left}px`,
-      y: `${e.clientY - rect.top}px`,
+    if (rafRef.current) return; // throttle via rAF
+    rafRef.current = requestAnimationFrame(() => {
+      const rect = heroRef.current?.getBoundingClientRect();
+      if (rect) {
+        setSpotlightPos({
+          x: `${e.clientX - rect.left}px`,
+          y: `${e.clientY - rect.top}px`,
+        });
+      }
+      rafRef.current = null;
     });
   }, []);
 

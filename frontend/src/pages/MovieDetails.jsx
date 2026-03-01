@@ -17,23 +17,29 @@ function getMovieLanguages(movie) {
   return langs;
 }
 
-// Animated counter for ratings
+// Animated counter for ratings using requestAnimationFrame
 function AnimatedCounter({ target, duration = 1200 }) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    let start = 0;
-    const increment = target / (duration / 16);
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= target) {
-        setCount(target);
-        clearInterval(timer);
+    if (!target) return;
+    let startTime = null;
+    const startValue = 0;
+
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      setCount(startValue + eased * (target - startValue));
+      if (progress < 1) {
+        requestAnimationFrame(animate);
       } else {
-        setCount(start);
+        setCount(target);
       }
-    }, 16);
-    return () => clearInterval(timer);
+    };
+
+    const raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
   }, [target, duration]);
 
   return <span>{count.toFixed(1)}</span>;

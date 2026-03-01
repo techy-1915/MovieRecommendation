@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
 /**
@@ -15,25 +15,25 @@ export default function GlassButton({
   type = 'button',
   ...props
 }) {
-  const rippleRef = useRef(null);
+  const btnRef = useRef(null);
+  const [ripples, setRipples] = useState([]);
 
   const handleClick = (e) => {
     if (disabled) return;
 
-    // Ripple effect
-    const btn = e.currentTarget;
-    const rect = btn.getBoundingClientRect();
-    const ripple = document.createElement('span');
-    const size = Math.max(rect.width, rect.height);
-    ripple.style.width = ripple.style.height = `${size}px`;
-    ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
-    ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
-    ripple.classList.add(
-      'absolute', 'rounded-full', 'pointer-events-none',
-      'animate-ripple', 'bg-white/20'
-    );
-    btn.appendChild(ripple);
-    setTimeout(() => ripple.remove(), 600);
+    // Ripple effect using React state (no direct DOM manipulation)
+    const btn = btnRef.current;
+    if (btn) {
+      const rect = btn.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const x = e.clientX - rect.left - size / 2;
+      const y = e.clientY - rect.top - size / 2;
+      const id = Date.now();
+      setRipples((prev) => [...prev, { id, x, y, size }]);
+      setTimeout(() => {
+        setRipples((prev) => prev.filter((r) => r.id !== id));
+      }, 600);
+    }
 
     onClick && onClick(e);
   };
@@ -57,7 +57,7 @@ export default function GlassButton({
 
   return (
     <motion.button
-      ref={rippleRef}
+      ref={btnRef}
       type={type}
       onClick={handleClick}
       disabled={disabled}
@@ -73,6 +73,19 @@ export default function GlassButton({
       `}
       {...props}
     >
+      {/* Ripple elements */}
+      {ripples.map((ripple) => (
+        <span
+          key={ripple.id}
+          className="absolute rounded-full pointer-events-none animate-ripple bg-white/20"
+          style={{
+            width: ripple.size,
+            height: ripple.size,
+            left: ripple.x,
+            top: ripple.y,
+          }}
+        />
+      ))}
       <span className="relative z-10 flex items-center justify-center gap-2">
         {children}
       </span>
