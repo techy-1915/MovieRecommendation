@@ -9,6 +9,7 @@ import SeatSelection from './pages/SeatSelection';
 import Auth from './pages/Auth';
 import BookingConfirmation from './pages/BookingConfirmation';
 import MyBookings from './pages/MyBookings';
+import Showtimes from './pages/Showtimes';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/movie/:id" element={<MovieDetails />} />
+            <Route path="/movie/:id/showtimes" element={<Showtimes />} />
             <Route
               path="/booking/:showId"
               element={
