@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -84,10 +85,48 @@ public class TMDBService {
         }
 
         try {
-            syncMoviesFromEndpoint("/movie/now_playing");
+            // Now playing in India (region-based)
+            syncMoviesFromUrl(baseUrl + "/movie/now_playing?api_key=" + apiKey + "&language=en-US&region=IN&page=1");
+            syncMoviesFromUrl(baseUrl + "/movie/now_playing?api_key=" + apiKey + "&language=en-US&region=IN&page=2");
+
+            // Trending this week
+            syncMoviesFromUrl(baseUrl + "/trending/movie/week?api_key=" + apiKey);
+
+            // Regional language movies
+            for (String lang : List.of("te", "hi", "ta")) {
+                syncMoviesFromUrl(baseUrl + "/discover/movie?api_key=" + apiKey
+                        + "&with_original_language=" + lang + "&sort_by=popularity.desc&page=1");
+            }
+
+            // Popular movies as fallback
             syncMoviesFromEndpoint("/movie/popular");
         } catch (Exception e) {
             logger.error("Failed to sync movies from TMDB: {}", e.getMessage());
+        }
+    }
+
+    /** Automatic sync every 6 hours (21,600,000 ms). */
+    @Scheduled(fixedDelay = 21_600_000, initialDelay = 60_000)
+    public void scheduledSync() {
+        logger.info("Running scheduled TMDB sync...");
+        syncGenres();
+        syncMovies();
+        logger.info("Scheduled TMDB sync complete.");
+    }
+
+    @SuppressWarnings("unchecked")
+    private void syncMoviesFromUrl(String url) {
+        try {
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            if (response == null || !response.containsKey("results")) return;
+
+            List<Map<String, Object>> results = (List<Map<String, Object>>) response.get("results");
+            for (Map<String, Object> movieData : results) {
+                saveOrUpdateMovie(movieData);
+            }
+            logger.info("Synced movies from URL: {}", url.replaceAll("api_key=[^&]+", "api_key=***"));
+        } catch (Exception e) {
+            logger.error("Error syncing from URL {}: {}", url.replaceAll("api_key=[^&]+", "api_key=***"), e.getMessage());
         }
     }
 

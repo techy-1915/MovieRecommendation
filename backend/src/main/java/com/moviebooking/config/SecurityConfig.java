@@ -32,6 +32,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/movies/**").permitAll()
                 .requestMatchers("/api/shows/**").permitAll()
                 .requestMatchers("/api/seats/**").permitAll()
+                .requestMatchers("/api/theatres/**").permitAll()
                 .requestMatchers("/api/bookings/**").authenticated()
                 .requestMatchers("/api/sync/**").permitAll()
                 .anyRequest().authenticated()
