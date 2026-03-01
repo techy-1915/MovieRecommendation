@@ -58,7 +58,7 @@ export default function BookingConfirmation() {
     });
   };
 
-  const qrData = `BOOKING:${bookingId}|MOVIE:${booking?.movieTitle}|SEATS:${booking?.seats?.join(',')}|AMOUNT:${booking?.totalAmount}`;
+  const qrData = `BOOKING:${bookingId}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
 
   const handleShareWhatsApp = () => {

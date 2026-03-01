@@ -83,7 +83,7 @@ export default function PaymentSummary() {
   const getPaymentMethodLabel = () => {
     switch (activeTab) {
       case 'upi': return upiId ? `UPI - ${upiId}` : `UPI - ${selectedUpi.toUpperCase()}`;
-      case 'card': return `Card - ${cardNumber ? `****${cardNumber.slice(-4)}` : 'Card'}`;
+      case 'card': return `Card - ${cardNumber ? `XXXX-${cardNumber.slice(-4)}` : 'Card'}`;
       case 'wallet': return `Wallet - ${selectedWallet}`;
       case 'netbanking': return `NetBanking - ${selectedBank || 'Bank'}`;
       case 'voucher': return 'Gift Voucher';

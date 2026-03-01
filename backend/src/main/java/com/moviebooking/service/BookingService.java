@@ -74,20 +74,20 @@ public class BookingService {
         return toBookingResponse(booking);
     }
 
-    public Booking cancelBooking(Long bookingId) {
+    public BookingResponse cancelBooking(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found: " + bookingId));
 
         booking.setStatus(Booking.BookingStatus.CANCELLED);
 
-        // Update only this booking's seats to AVAILABLE
         List<BookingSeat> bookingSeats = bookingSeatRepository.findByBooking_BookingId(bookingId);
         bookingSeats.forEach(bs -> {
             bs.setStatus(BookingSeat.BookingSeatStatus.AVAILABLE);
             bookingSeatRepository.save(bs);
         });
 
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        return toBookingResponse(saved);
     }
 
     public List<BookingResponse> getUserBookings(Long userId) {
