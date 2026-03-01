@@ -27,4 +27,16 @@ public class Theatre {
 
     @Column(name = "address", length = 500)
     private String address;
+
+    @Column(name = "movie_glu_id", length = 100)
+    private String movieGluId;
+
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
+    @Column(name = "distance_in_km")
+    private Double distanceInKm;
 }

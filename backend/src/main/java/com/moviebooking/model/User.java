@@ -33,6 +33,12 @@ public class User {
     @Column(name = "phone", length = 20)
     private String phone;
 
+    @Column(name = "user_lat")
+    private Double userLat;
+
+    @Column(name = "user_long")
+    private Double userLong;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

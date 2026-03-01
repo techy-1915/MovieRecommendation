@@ -18,4 +18,8 @@ public class ShowSummaryResponse {
     private String screenName;
     private BigDecimal price;
     private int availableSeatsCount;
+    private String screenType;
+    private String screenSize;
+    private String experienceType;
+    private String priceTier;
 }

@@ -1,5 +1,19 @@
 import React, { useState } from 'react';
 
+// Approximate coordinates for popular Indian cities
+const CITY_COORDS = {
+  Mumbai: { lat: 19.076, lng: 72.8777 },
+  Kochi: { lat: 9.9312, lng: 76.2673 },
+  'Delhi NCR': { lat: 28.7041, lng: 77.1025 },
+  Bengaluru: { lat: 12.9716, lng: 77.5946 },
+  Hyderabad: { lat: 17.385, lng: 78.4867 },
+  Chandigarh: { lat: 30.7333, lng: 76.7794 },
+  Ahmedabad: { lat: 23.0225, lng: 72.5714 },
+  Pune: { lat: 18.5204, lng: 73.8567 },
+  Chennai: { lat: 13.0827, lng: 80.2707 },
+  Kolkata: { lat: 22.5726, lng: 88.3639 },
+};
+
 const CITIES = [
   { name: 'Mumbai', icon: '🌆' },
   { name: 'Kochi', icon: '🏖️' },
@@ -15,6 +29,7 @@ const CITIES = [
 
 export default function CitySelectionModal({ onSelectCity, onClose }) {
   const [query, setQuery] = useState('');
+  const [detecting, setDetecting] = useState(false);
 
   const filtered = CITIES.filter((c) =>
     c.name.toLowerCase().includes(query.toLowerCase())
@@ -22,18 +37,36 @@ export default function CitySelectionModal({ onSelectCity, onClose }) {
 
   const handleSelect = (cityName) => {
     localStorage.setItem('selectedCity', cityName);
+    const coords = CITY_COORDS[cityName];
+    if (coords) {
+      localStorage.setItem('userLat', String(coords.lat));
+      localStorage.setItem('userLng', String(coords.lng));
+    }
     onSelectCity(cityName);
   };
 
   const handleDetectLocation = () => {
     if (!navigator.geolocation) return;
+    setDetecting(true);
     navigator.geolocation.getCurrentPosition(
-      () => {
-        // Reverse-geocoding is not implemented; fall back to Mumbai
-        handleSelect('Mumbai');
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        localStorage.setItem('userLat', String(latitude));
+        localStorage.setItem('userLng', String(longitude));
+        // Find closest city as display label
+        let closestCity = 'Mumbai';
+        let minDist = Infinity;
+        Object.entries(CITY_COORDS).forEach(([name, coords]) => {
+          const d = Math.hypot(coords.lat - latitude, coords.lng - longitude);
+          if (d < minDist) { minDist = d; closestCity = name; }
+        });
+        localStorage.setItem('selectedCity', closestCity);
+        setDetecting(false);
+        onSelectCity(closestCity);
       },
       (err) => {
         console.warn('Geolocation error:', err.message);
+        setDetecting(false);
       }
     );
   };
@@ -68,9 +101,10 @@ export default function CitySelectionModal({ onSelectCity, onClose }) {
         {/* Detect location */}
         <button
           onClick={handleDetectLocation}
-          className="text-red-600 text-sm font-medium mb-5 flex items-center gap-1 hover:text-red-700"
+          disabled={detecting}
+          className="text-red-600 text-sm font-medium mb-5 flex items-center gap-1 hover:text-red-700 disabled:opacity-50"
         >
-          📍 Detect my location
+          📍 {detecting ? 'Detecting...' : 'Detect my location'}
         </button>
 
         {/* Popular cities */}

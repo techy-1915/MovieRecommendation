@@ -41,6 +41,9 @@ function isSameDay(a, b) {
 
 const FAST_FILLING_THRESHOLD = 20;
 
+const SCREEN_TYPE_OPTIONS = ['All', '2D', '3D', 'IMAX', 'Dolby', '4DX'];
+const PRICE_TIER_OPTIONS = ['All', 'Standard', 'Gold', 'Premium'];
+
 export default function Showtimes() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -57,12 +60,16 @@ export default function Showtimes() {
   const [error, setError] = useState(null);
   const [showHowManySeatsModal, setShowHowManySeatsModal] = useState(false);
   const [selectedShow, setSelectedShow] = useState(null);
+  const [screenTypeFilter, setScreenTypeFilter] = useState('All');
+  const [priceTierFilter, setPriceTierFilter] = useState('All');
 
   useEffect(() => {
     const city = localStorage.getItem('selectedCity') ?? undefined;
+    const lat = localStorage.getItem('userLat') ? parseFloat(localStorage.getItem('userLat')) : undefined;
+    const lng = localStorage.getItem('userLng') ? parseFloat(localStorage.getItem('userLng')) : undefined;
     setLoading(true);
     setError(null);
-    Promise.all([getMovie(id), getTheatresForMovie(id, city)])
+    Promise.all([getMovie(id), getTheatresForMovie(id, city, lat, lng)])
       .then(([movieRes, theatresRes]) => {
         setMovie(movieRes.data);
         setTheatres(theatresRes.data);
@@ -83,6 +90,12 @@ export default function Showtimes() {
         if (language && show.language && show.language.toUpperCase() !== language.toUpperCase())
           return false;
         if (format && show.format && show.format.toUpperCase() !== format.toUpperCase())
+          return false;
+        if (screenTypeFilter !== 'All' && show.screenType &&
+            show.screenType.toUpperCase() !== screenTypeFilter.toUpperCase())
+          return false;
+        if (priceTierFilter !== 'All' && show.priceTier &&
+            show.priceTier.toLowerCase() !== priceTierFilter.toLowerCase())
           return false;
         return true;
       }),
@@ -200,17 +213,41 @@ export default function Showtimes() {
 
       {/* ── Filter bar ───────────────────────────────────────────────────── */}
       <div className="border-b border-white/5" style={{ background: 'rgba(10,10,10,0.8)' }}>
-        <div className="max-w-4xl mx-auto flex gap-2 overflow-x-auto py-3 px-4 scrollbar-hide">
-          {['Language & Format', 'Price Range', 'Special Formats', 'Preferred Time', 'Sort By'].map(
-            (label) => (
+        <div className="max-w-4xl mx-auto flex flex-wrap gap-2 py-3 px-4">
+          {/* Screen type filter */}
+          <div className="flex items-center gap-1 flex-wrap">
+            <span className="text-gray-500 text-xs mr-1">Format:</span>
+            {SCREEN_TYPE_OPTIONS.map((opt) => (
               <button
-                key={label}
-                className="flex-none glass-panel text-gray-300 text-xs px-3 py-1.5 rounded-full hover:border-neon-red/30 hover:text-white transition-all whitespace-nowrap"
+                key={opt}
+                onClick={() => setScreenTypeFilter(opt)}
+                className={`text-xs px-3 py-1.5 rounded-full transition-all whitespace-nowrap border
+                  ${screenTypeFilter === opt
+                    ? 'border-neon-red/50 text-white bg-red-500/20'
+                    : 'glass-panel text-gray-300 hover:border-neon-red/30 hover:text-white border-transparent'
+                  }`}
               >
-                {label} ▾
+                {opt}
               </button>
-            )
-          )}
+            ))}
+          </div>
+          {/* Price tier filter */}
+          <div className="flex items-center gap-1 flex-wrap">
+            <span className="text-gray-500 text-xs mr-1">Price:</span>
+            {PRICE_TIER_OPTIONS.map((opt) => (
+              <button
+                key={opt}
+                onClick={() => setPriceTierFilter(opt)}
+                className={`text-xs px-3 py-1.5 rounded-full transition-all whitespace-nowrap border
+                  ${priceTierFilter === opt
+                    ? 'border-yellow-500/50 text-yellow-300 bg-yellow-500/10'
+                    : 'glass-panel text-gray-300 hover:border-yellow-500/20 hover:text-white border-transparent'
+                  }`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -257,6 +294,11 @@ export default function Showtimes() {
                   {theatre.address && (
                     <p className="text-gray-500 text-xs mt-0.5">{theatre.address}</p>
                   )}
+                  {theatre.distanceInKm != null && (
+                    <p className="text-blue-400 text-xs mt-0.5">
+                      📍 {theatre.distanceInKm.toFixed(1)} km away
+                    </p>
+                  )}
                 </div>
                 <div className="flex gap-2 text-lg">
                   <span title="Info" className="cursor-pointer hover:scale-110 transition-transform">ℹ️</span>
@@ -293,6 +335,12 @@ export default function Showtimes() {
                         <div className="font-bold text-sm">{formatTime(show.showTime)}</div>
                         {show.screenType && (
                           <div className="text-xs text-gray-400 mt-0.5">{show.screenType}</div>
+                        )}
+                        {show.screenSize && (
+                          <div className="text-xs text-gray-500 mt-0.5">{show.screenSize}</div>
+                        )}
+                        {show.priceTier && (
+                          <div className="text-xs text-yellow-500 mt-0.5">{show.priceTier}</div>
                         )}
                         {isFastFilling && show.availableSeatsCount && (
                           <div className="text-xs text-orange-400 mt-0.5">

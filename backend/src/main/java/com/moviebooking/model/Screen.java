@@ -28,4 +28,10 @@ public class Screen {
 
     @Column(name = "total_seats")
     private Integer totalSeats;
+
+    @Column(name = "screen_type", length = 50)
+    private String screenType;
+
+    @Column(name = "screen_size", length = 50)
+    private String screenSize;
 }

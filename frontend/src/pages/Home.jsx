@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getMovies, getTrendingMovies, syncGenres, syncMovies, regenerateShows } from '../services/api';
+import { getMovies, getTrendingMovies, syncGenres, syncMovies, regenerateShows, syncMovieglu } from '../services/api';
 import MovieCard from '../components/MovieCard';
 import FilterBar from '../components/FilterBar';
 import TrendingMovies from '../components/TrendingMovies';
@@ -15,6 +15,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [syncing, setSyncing] = useState(false);
+  const [syncingMovieGlu, setSyncingMovieGlu] = useState(false);
   const [showCityModal, setShowCityModal] = useState(false);
   const [spotlightPos, setSpotlightPos] = useState({ x: '50%', y: '50%' });
   const heroRef = useRef(null);
@@ -69,6 +70,20 @@ export default function Home() {
       setError('Sync failed. Check your TMDB API key and ensure the backend is running.');
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const handleSyncMovieGlu = async () => {
+    setSyncingMovieGlu(true);
+    setError(null);
+    try {
+      const lat = localStorage.getItem('userLat') ? parseFloat(localStorage.getItem('userLat')) : 17.385;
+      const lng = localStorage.getItem('userLng') ? parseFloat(localStorage.getItem('userLng')) : 78.4867;
+      await syncMovieglu(lat, lng);
+    } catch {
+      setError('MovieGlu sync failed. Ensure MovieGlu credentials are configured in the backend.');
+    } finally {
+      setSyncingMovieGlu(false);
     }
   };
 
@@ -242,14 +257,24 @@ export default function Home() {
               </span>
             </motion.h2>
 
-            <GlassButton
-              onClick={handleSync}
-              disabled={syncing}
-              variant="secondary"
-              size="sm"
-            >
-              {syncing ? '⟳ Syncing...' : '⟳ Sync TMDB'}
-            </GlassButton>
+            <div className="flex gap-2">
+              <GlassButton
+                onClick={handleSync}
+                disabled={syncing}
+                variant="secondary"
+                size="sm"
+              >
+                {syncing ? '⟳ Syncing...' : '⟳ Sync TMDB'}
+              </GlassButton>
+              <GlassButton
+                onClick={handleSyncMovieGlu}
+                disabled={syncingMovieGlu}
+                variant="secondary"
+                size="sm"
+              >
+                {syncingMovieGlu ? '⟳ Syncing...' : '🎬 Sync MovieGlu'}
+              </GlassButton>
+            </div>
           </div>
 
           {loading ? (
