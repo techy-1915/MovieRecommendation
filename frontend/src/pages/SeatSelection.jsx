@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getSeats, createBooking } from '../services/api';
+import { getSeats } from '../services/api';
 import SeatGrid from '../components/SeatGrid';
 import { useAuth } from '../context/AuthContext';
 
 export default function SeatSelection() {
   const { showId } = useParams();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const [pricePerSeat] = useState(200);
   const [seats, setSeats] = useState([]);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [booking, setBooking] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -43,28 +42,21 @@ export default function SeatSelection() {
     );
   };
 
-  const handleProceed = async () => {
+  const handleProceed = () => {
     if (selectedSeats.length === 0) {
       setError('Please select at least one seat.');
       return;
     }
 
-    setBooking(true);
-    setError(null);
-    try {
-      const totalAmount = selectedSeats.length * pricePerSeat;
-      const res = await createBooking({
-        userId: user.userId,
-        showId: parseInt(showId),
-        seatIds: selectedSeats,
-        totalAmount,
-      });
-      navigate(`/booking/confirm/${res.data.bookingId}`);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Booking failed. Please try again.');
-    } finally {
-      setBooking(false);
-    }
+    // Get seat labels for selected seats
+    const seatLabels = selectedSeats.map((id) => {
+      const seat = seats.find((s) => s.seatId === id);
+      return seat ? `${seat.rowNo}${seat.seatNumber}` : id;
+    });
+
+    navigate(`/booking/${showId}/payment`, {
+      state: { selectedSeats, seatLabels },
+    });
   };
 
   const totalAmount = selectedSeats.length * pricePerSeat;
@@ -132,14 +124,10 @@ export default function SeatSelection() {
           </div>
           <button
             onClick={handleProceed}
-            disabled={booking || selectedSeats.length === 0}
+            disabled={selectedSeats.length === 0}
             className="flex-1 sm:flex-none bg-primary hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-3 rounded-xl font-bold text-base transition-colors sm:min-w-[180px]"
           >
-            {booking
-              ? 'Booking...'
-              : selectedSeats.length > 0
-              ? `Pay ₹ ${totalAmount}`
-              : 'Select Seats'}
+            {selectedSeats.length > 0 ? `Pay ₹ ${totalAmount}` : 'Select Seats'}
           </button>
         </div>
       </div>

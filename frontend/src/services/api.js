@@ -23,7 +23,10 @@ export const getTheatresForMovie = (movieId, city) =>
 export const getShows = (movieId, city) =>
   api.get(`/api/shows/${movieId}`, { params: city ? { city } : {} });
 export const getSeats = (showId) => api.get(`/api/seats/${showId}`);
+export const getShowDetails = (showId) => api.get(`/api/shows/detail/${showId}`);
 export const createBooking = (data) => api.post('/api/bookings', data);
+export const calculateTotal = (data) => api.post('/api/bookings/calculate-total', data);
+export const processPayment = (data) => api.post('/api/bookings/process-payment', data);
 export const cancelBooking = (bookingId) => api.post(`/api/bookings/${bookingId}/cancel`);
 export const getUserBookings = (userId) => api.get(`/api/bookings/user/${userId}`);
 export const getBooking = (bookingId) => api.get(`/api/bookings/${bookingId}`);

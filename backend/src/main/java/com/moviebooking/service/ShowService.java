@@ -1,6 +1,8 @@
 package com.moviebooking.service;
 
+import com.moviebooking.dto.ShowDetailsResponse;
 import com.moviebooking.dto.ShowResponse;
+import com.moviebooking.exception.ResourceNotFoundException;
 import com.moviebooking.model.Show;
 import com.moviebooking.repository.ShowRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,21 @@ public class ShowService {
         return showRepository.findByMovie_MovieIdAndScreen_Theatre_City(movieId, city).stream()
                 .map(this::toShowResponse)
                 .collect(Collectors.toList());
+    }
+
+    public ShowDetailsResponse getShowById(Long showId) {
+        Show show = showRepository.findById(showId)
+                .orElseThrow(() -> new ResourceNotFoundException("Show not found: " + showId));
+        return new ShowDetailsResponse(
+                show.getShowId(),
+                show.getMovie().getTitle(),
+                show.getMovie().getPosterUrl(),
+                show.getScreen().getTheatre().getTheatreName(),
+                show.getScreen().getScreenName(),
+                show.getScreen().getTheatre().getCity(),
+                show.getShowTime(),
+                show.getPrice()
+        );
     }
 
     private ShowResponse toShowResponse(Show show) {

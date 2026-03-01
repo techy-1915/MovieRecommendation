@@ -1,5 +1,6 @@
 package com.moviebooking.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Table(name = "booking_seats")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class BookingSeat {
 
     public enum BookingSeatStatus {
