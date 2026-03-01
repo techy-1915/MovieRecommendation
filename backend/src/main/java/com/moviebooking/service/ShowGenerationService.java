@@ -29,16 +29,16 @@ public class ShowGenerationService {
     private static final Logger logger = LoggerFactory.getLogger(ShowGenerationService.class);
 
     private static final Map<String, List<String[]>> CITY_THEATRES = Map.of(
-            "Hyderabad", List.of(
+            "Hyderabad", List.<String[]>of(
                     new String[]{"PVR Nexus", "Gachibowli, Hyderabad"},
                     new String[]{"INOX GVK", "GVK One Mall, Hyderabad"},
                     new String[]{"AMB Cinemas", "Gachibowli, Hyderabad"}
             ),
-            "Mumbai", List.of(
+            "Mumbai", List.<String[]>of(
                     new String[]{"PVR Lower Parel", "Lower Parel, Mumbai"},
                     new String[]{"Cinepolis Andheri", "Andheri West, Mumbai"}
             ),
-            "Delhi", List.of(
+            "Delhi", List.<String[]>of(
                     new String[]{"INOX Select City Walk", "Saket, Delhi"}
             )
     );
