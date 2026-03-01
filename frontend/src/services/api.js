@@ -32,5 +32,6 @@ export const register = (data) => api.post('/api/auth/register', data);
 export const getProfile = () => api.get('/api/auth/profile');
 export const syncGenres = () => api.post('/api/sync/genres');
 export const syncMovies = () => api.post('/api/sync/movies');
+export const regenerateShows = () => api.post('/api/sync/regenerate-shows');
 
 export default api;

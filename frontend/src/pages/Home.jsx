@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getMovies, getTrendingMovies, syncGenres, syncMovies } from '../services/api';
+import { getMovies, getTrendingMovies, syncGenres, syncMovies, regenerateShows } from '../services/api';
 import MovieCard from '../components/MovieCard';
 import FilterBar from '../components/FilterBar';
 import TrendingMovies from '../components/TrendingMovies';
@@ -53,6 +53,7 @@ export default function Home() {
     try {
       await syncGenres();
       await syncMovies();
+      await regenerateShows();
       await fetchMovies();
       await fetchTrending();
     } catch {

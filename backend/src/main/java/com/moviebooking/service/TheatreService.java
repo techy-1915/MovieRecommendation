@@ -10,6 +10,8 @@ import com.moviebooking.repository.ScreenRepository;
 import com.moviebooking.repository.SeatRepository;
 import com.moviebooking.repository.ShowRepository;
 import com.moviebooking.repository.TheatreRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class TheatreService {
+
+    private static final Logger logger = LoggerFactory.getLogger(TheatreService.class);
 
     @Autowired
     private TheatreRepository theatreRepository;
@@ -38,11 +42,15 @@ public class TheatreService {
     private BookingSeatRepository bookingSeatRepository;
 
     public List<TheatreWithShowsResponse> getTheatresForMovie(Long movieId, String city) {
+        logger.info("Fetching theatres for movie {} in city {}", movieId, city);
+
         List<Show> shows;
         if (city != null && !city.isBlank()) {
             shows = showRepository.findByMovie_MovieIdAndScreen_Theatre_City(movieId, city);
+            logger.info("Found {} shows for movie {} in {}", shows.size(), movieId, city);
         } else {
             shows = showRepository.findByMovie_MovieId(movieId);
+            logger.info("Found {} shows for movie {} (all cities)", shows.size(), movieId);
         }
 
         // Group shows by theatre

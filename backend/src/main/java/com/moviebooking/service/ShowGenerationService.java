@@ -71,6 +71,8 @@ public class ShowGenerationService {
     @Transactional
     public void generateShowsForMovie(Movie movie) {
         try {
+            logger.info("Generating shows for movie: {}", movie.getTitle());
+
             for (Map.Entry<String, List<String[]>> cityEntry : CITY_THEATRES.entrySet()) {
                 String city = cityEntry.getKey();
                 List<String[]> theatreInfoList = cityEntry.getValue();
@@ -89,12 +91,10 @@ public class ShowGenerationService {
                         LocalDate showDate = today.plusDays(dayOffset);
                         for (LocalTime showTime : SHOW_TIMES) {
                             LocalDateTime showDateTime = LocalDateTime.of(showDate, showTime);
-                            // Only create if it doesn't already exist
+                            // Check if this exact show already exists
                             boolean exists = showRepository
-                                    .findByMovie_MovieIdAndScreen_Theatre_City(movie.getMovieId(), city)
-                                    .stream()
-                                    .anyMatch(s -> s.getScreen().getScreenId().equals(screen.getScreenId())
-                                            && s.getShowTime().equals(showDateTime));
+                                    .existsByMovie_MovieIdAndScreen_ScreenIdAndShowTime(
+                                        movie.getMovieId(), screen.getScreenId(), showDateTime);
                             if (!exists) {
                                 Show show = new Show();
                                 show.setMovie(movie);
@@ -102,14 +102,16 @@ public class ShowGenerationService {
                                 show.setShowTime(showDateTime);
                                 show.setPrice(NORMAL_PRICE);
                                 showRepository.save(show);
+                                logger.debug("Created show for {} at {} in {}",
+                                    movie.getTitle(), showDateTime, theatre.getTheatreName());
                             }
                         }
                     }
                 }
             }
-            logger.info("Generated shows for movie: {}", movie.getTitle());
+            logger.info("Successfully generated shows for movie: {}", movie.getTitle());
         } catch (Exception e) {
-            logger.error("Failed to generate shows for movie {}: {}", movie.getTitle(), e.getMessage());
+            logger.error("Failed to generate shows for movie {}: {}", movie.getTitle(), e.getMessage(), e);
         }
     }
 
