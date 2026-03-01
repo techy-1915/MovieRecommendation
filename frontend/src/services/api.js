@@ -13,6 +13,8 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export const PLACEHOLDER_POSTER = 'https://via.placeholder.com/300x450/1a1a1a/DC2626?text=No+Poster';
+
 export const getMovies = (params) => api.get('/api/movies', { params });
 export const getMovie = (id) => api.get(`/api/movies/${id}`);
 export const getTrendingMovies = () => api.get('/api/movies/trending');

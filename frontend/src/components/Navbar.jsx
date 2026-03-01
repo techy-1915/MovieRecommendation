@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const CITIES = ['All Cities', 'Mumbai', 'Delhi', 'Hyderabad', 'Bangalore', 'Chennai'];
@@ -7,11 +7,21 @@ const CITIES = ['All Cities', 'Mumbai', 'Delhi', 'Hyderabad', 'Bangalore', 'Chen
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
-  const [selectedCity, setSelectedCity] = useState('All Cities');
+  const [searchParams] = useSearchParams();
+  const selectedCity = searchParams.get('city') || 'All Cities';
 
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleCityChange = (e) => {
+    const city = e.target.value;
+    if (city === 'All Cities') {
+      navigate('/');
+    } else {
+      navigate(`/?city=${encodeURIComponent(city)}`);
+    }
   };
 
   return (
@@ -27,7 +37,7 @@ export default function Navbar() {
           <div className="flex items-center space-x-4">
             <select
               value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
+              onChange={handleCityChange}
               className="bg-gray-800 text-white text-sm rounded-lg px-3 py-2 border border-gray-700 focus:outline-none focus:border-primary"
             >
               {CITIES.map((city) => (

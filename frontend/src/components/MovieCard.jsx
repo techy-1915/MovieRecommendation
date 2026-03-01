@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PLACEHOLDER_POSTER } from '../services/api';
 
 export default function MovieCard({ movie }) {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function MovieCard({ movie }) {
             alt={movie.title}
             className="w-full h-full object-cover"
             onError={(e) => {
-              e.target.src = `https://via.placeholder.com/300x450/1a1a1a/DC2626?text=${encodeURIComponent(movie.title)}`;
+              e.target.src = PLACEHOLDER_POSTER;
             }}
           />
         ) : (

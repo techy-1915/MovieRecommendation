@@ -8,6 +8,12 @@ export const removeToken = () => localStorage.removeItem(TOKEN_KEY);
 export const setUser = (user) => localStorage.setItem(USER_KEY, JSON.stringify(user));
 export const getUser = () => {
   const u = localStorage.getItem(USER_KEY);
-  return u ? JSON.parse(u) : null;
+  if (!u) return null;
+  try {
+    return JSON.parse(u);
+  } catch {
+    localStorage.removeItem(USER_KEY);
+    return null;
+  }
 };
 export const removeUser = () => localStorage.removeItem(USER_KEY);

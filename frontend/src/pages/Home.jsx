@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { getMovies, getTrendingMovies } from '../services/api';
 import MovieCard from '../components/MovieCard';
 import FilterBar from '../components/FilterBar';
@@ -9,13 +10,13 @@ export default function Home() {
   const [trending, setTrending] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedCity, setSelectedCity] = useState('');
-
-  const CITIES = ['', 'Mumbai', 'Delhi', 'Hyderabad'];
+  const [searchParams] = useSearchParams();
+  const selectedCity = searchParams.get('city') || '';
 
   useEffect(() => {
     fetchMovies();
     fetchTrending();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCity]);
 
   const fetchMovies = async () => {
@@ -76,23 +77,6 @@ export default function Home() {
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* City filter tabs */}
-        <div className="flex gap-2 mb-6 flex-wrap">
-          {[{ label: 'All Cities', value: '' }, ...CITIES.slice(1).map(c => ({ label: c, value: c }))].map(({ label, value }) => (
-            <button
-              key={value}
-              onClick={() => setSelectedCity(value)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                selectedCity === value
-                  ? 'bg-primary text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
         {/* Filter Bar */}
         <FilterBar movies={movies} onFilter={setFilteredMovies} />
 

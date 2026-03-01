@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getMovie, getShows } from '../services/api';
+import { getMovie, getShows, PLACEHOLDER_POSTER } from '../services/api';
 import ShowTimeCard from '../components/ShowTimeCard';
 
 export default function MovieDetails() {
@@ -75,7 +75,7 @@ export default function MovieDetails() {
               src={movie.posterUrl}
               alt={movie.title}
               className="w-36 sm:w-48 rounded-xl shadow-2xl"
-              onError={(e) => { e.target.src = 'https://via.placeholder.com/200x300/1a1a1a/DC2626?text=No+Poster'; }}
+              onError={(e) => { e.target.src = PLACEHOLDER_POSTER; }}
             />
           </div>
 
