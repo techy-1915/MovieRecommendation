@@ -3,3 +3,6 @@ build/
 .env
 .env.local
 .env.production
+.env.test.local
+.env.production.local
+.env.development.local

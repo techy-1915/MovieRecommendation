@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/shows/**").permitAll()
                 .requestMatchers("/api/seats/**").permitAll()
                 .requestMatchers("/api/bookings/**").authenticated()
-                .requestMatchers("/api/sync/**").authenticated()
+                .requestMatchers("/api/sync/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
