@@ -4,6 +4,7 @@ import { getMovies, getTrendingMovies, syncGenres, syncMovies, regenerateShows }
 import MovieCard from '../components/MovieCard';
 import FilterBar from '../components/FilterBar';
 import TrendingMovies from '../components/TrendingMovies';
+import CitySelectionModal from '../components/CitySelectionModal';
 
 export default function Home() {
   const [movies, setMovies] = useState([]);
@@ -12,10 +13,15 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [syncing, setSyncing] = useState(false);
-  const [searchParams] = useSearchParams();
-  const selectedCity = searchParams.get('city') || '';
+  const [showCityModal, setShowCityModal] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedCity = searchParams.get('city') || localStorage.getItem('selectedCity') || '';
 
   useEffect(() => {
+    // Show city modal on first visit (no city stored)
+    if (!localStorage.getItem('selectedCity') && !searchParams.get('city')) {
+      setShowCityModal(true);
+    }
     fetchMovies();
     fetchTrending();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,31 +69,51 @@ export default function Home() {
     }
   };
 
+  const handleCitySelect = (city) => {
+    setShowCityModal(false);
+    if (city) {
+      setSearchParams({ city });
+    } else {
+      setSearchParams({});
+    }
+  };
+
   const featuredMovie = movies[0];
 
   return (
     <div className="min-h-screen bg-dark">
+      {/* City Selection Modal */}
+      {showCityModal && (
+        <CitySelectionModal
+          onSelectCity={handleCitySelect}
+          onClose={() => setShowCityModal(false)}
+        />
+      )}
+
       {/* Hero Banner */}
       {featuredMovie && (
         <div className="relative h-72 sm:h-96 overflow-hidden">
           <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${featuredMovie.posterUrl})` }}
+            className="absolute inset-0 bg-cover bg-center scale-105"
+            style={{ backgroundImage: `url(${featuredMovie.posterUrl || ''})` }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-dark via-dark/70 to-transparent" />
-          <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-center">
+          <div className="absolute inset-0 bg-gradient-to-r from-dark via-dark/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent" />
+          <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-end pb-8">
             <div className="max-w-lg">
               <h1 className="text-4xl font-bold text-white mb-2">{featuredMovie.title}</h1>
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-yellow-400">⭐ {featuredMovie.rating}</span>
-                {featuredMovie.language && (
-                  <span className="bg-gray-700 text-xs px-2 py-0.5 rounded uppercase">
-                    {featuredMovie.language}
-                  </span>
-                )}
+              <div className="flex items-center gap-3 mb-3 flex-wrap">
+                <span className="text-yellow-400 font-bold">
+                  ⭐ {featuredMovie.rating ? Number(featuredMovie.rating).toFixed(1) : 'N/A'}
+                </span>
                 {featuredMovie.certificate && (
                   <span className="bg-yellow-500 text-black text-xs font-bold px-2 py-0.5 rounded">
                     {featuredMovie.certificate}
+                  </span>
+                )}
+                {featuredMovie.language && (
+                  <span className="bg-gray-700 text-xs px-2 py-0.5 rounded uppercase">
+                    {featuredMovie.language}
                   </span>
                 )}
                 {featuredMovie.region && (
@@ -96,7 +122,9 @@ export default function Home() {
                   </span>
                 )}
               </div>
-              <p className="text-gray-300 text-sm line-clamp-2">{featuredMovie.description}</p>
+              {featuredMovie.description && (
+                <p className="text-gray-300 text-sm line-clamp-2">{featuredMovie.description}</p>
+              )}
             </div>
           </div>
         </div>
