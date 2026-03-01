@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getMovies, getTrendingMovies } from '../services/api';
+import { getMovies, getTrendingMovies, syncGenres, syncMovies } from '../services/api';
 import MovieCard from '../components/MovieCard';
 import FilterBar from '../components/FilterBar';
 
@@ -10,6 +10,7 @@ export default function Home() {
   const [trending, setTrending] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [syncing, setSyncing] = useState(false);
   const [searchParams] = useSearchParams();
   const selectedCity = searchParams.get('city') || '';
 
@@ -39,6 +40,21 @@ export default function Home() {
       setTrending(res.data.slice(0, 6));
     } catch {
       // trending is optional
+    }
+  };
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setError(null);
+    try {
+      await syncGenres();
+      await syncMovies();
+      await fetchMovies();
+      await fetchTrending();
+    } catch {
+      setError('Sync failed. Check your TMDB API key and ensure the backend is running.');
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -89,10 +105,19 @@ export default function Home() {
 
         {/* Now Playing */}
         <section className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6">
-            🎬 Now Playing
-            <span className="text-gray-500 text-base font-normal ml-2">({filteredMovies.length} movies)</span>
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white">
+              🎬 Now Playing
+              <span className="text-gray-500 text-base font-normal ml-2">({filteredMovies.length} movies)</span>
+            </h2>
+            <button
+              onClick={handleSync}
+              disabled={syncing}
+              className="bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-gray-300 hover:text-white text-sm px-4 py-2 rounded-lg transition-colors border border-gray-700"
+            >
+              {syncing ? 'Syncing...' : 'Sync from TMDB'}
+            </button>
+          </div>
           {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {Array.from({ length: 12 }).map((_, i) => (
@@ -102,7 +127,14 @@ export default function Home() {
           ) : filteredMovies.length === 0 ? (
             <div className="text-center py-16 text-gray-500">
               <div className="text-5xl mb-4">🎭</div>
-              <p>No movies found. Try syncing movies from TMDB.</p>
+              <p className="mb-4">No movies found. Sync movies from TMDB to get started.</p>
+              <button
+                onClick={handleSync}
+                disabled={syncing}
+                className="bg-primary hover:bg-red-700 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+              >
+                {syncing ? 'Syncing movies...' : 'Sync Movies from TMDB'}
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">

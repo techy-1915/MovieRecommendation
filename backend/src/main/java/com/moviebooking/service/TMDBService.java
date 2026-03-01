@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -37,6 +39,15 @@ public class TMDBService {
     private MovieRepository movieRepository;
 
     private final RestTemplate restTemplate = new RestTemplate();
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationReady() {
+        if (movieRepository.count() == 0) {
+            logger.info("No movies found in database. Auto-syncing from TMDB...");
+            syncGenres();
+            syncMovies();
+        }
+    }
 
     @SuppressWarnings("unchecked")
     public void syncGenres() {
