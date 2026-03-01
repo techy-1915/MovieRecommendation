@@ -1,10 +1,10 @@
 package com.moviebooking.controller;
 
+import com.moviebooking.dto.BookingConfirmationDTO;
 import com.moviebooking.dto.BookingRequest;
 import com.moviebooking.dto.BookingResponse;
-import com.moviebooking.exception.ResourceNotFoundException;
-import com.moviebooking.model.Booking;
-import com.moviebooking.repository.BookingRepository;
+import com.moviebooking.dto.BookingSummaryDTO;
+import com.moviebooking.dto.PaymentRequest;
 import com.moviebooking.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,19 +20,25 @@ public class BookingController {
     @Autowired
     private BookingService bookingService;
 
-    @Autowired
-    private BookingRepository bookingRepository;
-
     @PostMapping
-    public ResponseEntity<Booking> createBooking(@RequestBody BookingRequest request) {
-        Booking booking = bookingService.createBooking(request);
+    public ResponseEntity<BookingResponse> createBooking(@RequestBody BookingRequest request) {
+        BookingResponse booking = bookingService.createBooking(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(booking);
     }
 
+    @PostMapping("/calculate-total")
+    public ResponseEntity<BookingSummaryDTO> calculateTotal(@RequestBody BookingRequest request) {
+        return ResponseEntity.ok(bookingService.calculateTotal(request));
+    }
+
+    @PostMapping("/process-payment")
+    public ResponseEntity<BookingConfirmationDTO> processPayment(@RequestBody PaymentRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.processPayment(request));
+    }
+
     @PostMapping("/{bookingId}/cancel")
-    public ResponseEntity<Booking> cancelBooking(@PathVariable Long bookingId) {
-        Booking booking = bookingService.cancelBooking(bookingId);
-        return ResponseEntity.ok(booking);
+    public ResponseEntity<BookingResponse> cancelBooking(@PathVariable Long bookingId) {
+        return ResponseEntity.ok(bookingService.cancelBooking(bookingId));
     }
 
     @GetMapping("/user/{userId}")
@@ -41,9 +47,7 @@ public class BookingController {
     }
 
     @GetMapping("/{bookingId}")
-    public ResponseEntity<Booking> getBooking(@PathVariable Long bookingId) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found: " + bookingId));
-        return ResponseEntity.ok(booking);
+    public ResponseEntity<BookingResponse> getBooking(@PathVariable Long bookingId) {
+        return ResponseEntity.ok(bookingService.getBookingById(bookingId));
     }
 }

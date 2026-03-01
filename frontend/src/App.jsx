@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import MovieDetails from './pages/MovieDetails';
 import SeatSelection from './pages/SeatSelection';
+import PaymentSummary from './pages/PaymentSummary';
 import Auth from './pages/Auth';
 import BookingConfirmation from './pages/BookingConfirmation';
 import MyBookings from './pages/MyBookings';
@@ -26,6 +27,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <SeatSelection />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/booking/:showId/payment"
+              element={
+                <ProtectedRoute>
+                  <PaymentSummary />
                 </ProtectedRoute>
               }
             />
